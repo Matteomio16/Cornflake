@@ -6,7 +6,7 @@ Cornflake: local meeting notes for Windows 11. MIT fork of Meetily v0.4.1 (Zackr
 Tauri 2 (Rust core in `frontend/src-tauri`) + Next.js 14 static export (`frontend`). SQLite via sqlx. Whisper via whisper-rs, Parakeet via ort.
 
 ## Build (Windows, PowerShell)
-- `corepack pnpm install` in `frontend`.
+- pnpm 9 is pinned (`packageManager`); the global pnpm here is 12, which drops the lockfile overrides. Use `npx pnpm@9 install` in `frontend`.
 - whisper-rs needs libclang: `pip install libclang`, then set `LIBCLANG_PATH` to the `clang\native` folder inside the Python site-packages.
 - `cargo check` in `frontend/src-tauri`; `corepack pnpm exec tsc --noEmit` in `frontend`.
 - `build.rs` downloads FFmpeg on first build.
