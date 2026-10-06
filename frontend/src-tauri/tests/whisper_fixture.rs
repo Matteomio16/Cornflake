@@ -48,3 +48,15 @@ fn transcribes_fixture_speech() {
         }
     }
 }
+
+#[test]
+fn transcribe_given_file() {
+    let (Ok(model), Ok(wav)) = (std::env::var("OC_TEST_MODEL"), std::env::var("OC_TEST_WAV")) else {
+        return;
+    };
+    let ctx = WhisperContext::new_with_params(&model, WhisperContextParameters::default()).unwrap();
+    let bytes = std::fs::read(wav).unwrap();
+    let at = bytes.windows(4).position(|w| w == b"data").unwrap() + 8;
+    let audio: Vec<f32> = bytes[at..].chunks_exact(2).map(|b| i16::from_le_bytes([b[0], b[1]]) as f32 / 32768.0).collect();
+    eprintln!("TEXT: {}", transcribe(&ctx, &audio));
+}

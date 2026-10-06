@@ -493,3 +493,176 @@ impl Drop for AudioStreamManager {
         }
     }
 }
+#[cfg(test)]
+mod capture_check {
+    use super::*;
+    use crate::audio::audio_processing::resample_audio;
+    use crate::audio::devices::{default_input_device, default_output_device};
+
+    fn write_wav_16k(path: &std::path::Path, samples: &[f32]) {
+        let data: Vec<u8> = samples
+            .iter()
+            .flat_map(|s| ((s.clamp(-1.0, 1.0) * 32767.0) as i16).to_le_bytes())
+            .collect();
+        let mut out = Vec::new();
+        out.extend_from_slice(b"RIFF");
+        out.extend_from_slice(&(36 + data.len() as u32).to_le_bytes());
+        out.extend_from_slice(b"WAVEfmt ");
+        out.extend_from_slice(&16u32.to_le_bytes());
+        out.extend_from_slice(&1u16.to_le_bytes());
+        out.extend_from_slice(&1u16.to_le_bytes());
+        out.extend_from_slice(&16000u32.to_le_bytes());
+        out.extend_from_slice(&32000u32.to_le_bytes());
+        out.extend_from_slice(&2u16.to_le_bytes());
+        out.extend_from_slice(&16u16.to_le_bytes());
+        out.extend_from_slice(b"data");
+        out.extend_from_slice(&(data.len() as u32).to_le_bytes());
+        out.extend_from_slice(&data);
+        std::fs::write(path, out).unwrap();
+    }
+
+    /// Manual hardware check: records the real default microphone and the default output
+    /// loopback while the fixture speech plays. Requires OC_CAPTURE_CHECK=1 and OC_CAPTURE_OUT.
+    #[tokio::test]
+    async fn manual_wasapi_capture() {
+        if std::env::var("OC_CAPTURE_CHECK").as_deref() != Ok("1") {
+            return;
+        }
+        let out_dir = std::path::PathBuf::from(std::env::var("OC_CAPTURE_OUT").unwrap());
+        let mic_on = std::env::var("OC_CAPTURE_MIC").as_deref() != Ok("0");
+        let mic = Arc::new(default_input_device().unwrap());
+        if let Ok(devs) = crate::audio::devices::list_audio_devices().await {
+            for d in devs { eprintln!("listed device: {} ({:?})", d.name, d.device_type); }
+        }
+        let sys = Arc::new(default_output_device().unwrap());
+        eprintln!("mic device: {}  | system device: {}", mic.name, sys.name);
+
+        let state = RecordingState::new();
+        let (tx, mut rx) = mpsc::unbounded_channel();
+        state.set_audio_sender(tx);
+        state.start_recording().unwrap();
+        let mut manager = AudioStreamManager::new(state.clone());
+        manager.start_streams(if mic_on { Some(mic) } else { None }, Some(sys), None).await.unwrap();
+
+        let _tone = if std::env::var("OC_CAPTURE_TONE").as_deref() == Ok("1") {
+            use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+            let dev = cpal::default_host().default_output_device().unwrap();
+            eprintln!("tone device: {}", dev.name().unwrap_or_default());
+            let cfg = dev.default_output_config().unwrap();
+            let (rate, ch) = (cfg.sample_rate().0 as f32, cfg.channels() as usize);
+            let mut t = 0f32;
+            let st = dev
+                .build_output_stream(
+                    &cfg.config(),
+                    move |buf: &mut [f32], _| {
+                        for frame in buf.chunks_mut(ch) {
+                            let v = (t * 440.0 * std::f32::consts::TAU).sin() * 0.2;
+                            t = (t + 1.0 / rate) % 1.0;
+                            frame.iter_mut().for_each(|x| *x = v);
+                        }
+                    },
+                    |e| eprintln!("tone error: {e}"),
+                    None,
+                )
+                .unwrap();
+            st.play().unwrap();
+            Some(st)
+        } else {
+            None
+        };
+
+        let fixtures = format!("{}/tests/fixtures", env!("CARGO_MANIFEST_DIR"));
+        let player = std::thread::spawn(move || {
+            std::thread::sleep(std::time::Duration::from_secs(2));
+            for f in ["me.wav", "them.wav"] {
+                let cmd = format!("(New-Object Media.SoundPlayer '{}/{}').PlaySync()", fixtures, f);
+                let _ = std::process::Command::new("powershell")
+                    .args(["-NoProfile", "-NonInteractive", "-Command", &cmd])
+                    .status();
+            }
+        });
+
+        let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(21);
+        let (mut mic_pcm, mut sys_pcm) = (Vec::new(), Vec::new());
+        let (mut mic_rate, mut sys_rate) = (0, 0);
+        while let Ok(Some(chunk)) = tokio::time::timeout_at(deadline, rx.recv()).await {
+            match chunk.device_type {
+                DeviceType::Microphone => { mic_rate = chunk.sample_rate; mic_pcm.extend(chunk.data) }
+                DeviceType::System => { sys_rate = chunk.sample_rate; sys_pcm.extend(chunk.data) }
+            }
+        }
+        manager.stop_streams().unwrap();
+        let _ = player.join();
+
+        let rms = |v: &[f32]| (v.iter().map(|x| x * x).sum::<f32>() / v.len().max(1) as f32).sqrt();
+        eprintln!("mic: {} samples @ {} Hz, rms {:.5}", mic_pcm.len(), mic_rate, rms(&mic_pcm));
+        eprintln!("system: {} samples @ {} Hz, rms {:.5}", sys_pcm.len(), sys_rate, rms(&sys_pcm));
+        assert!(!sys_pcm.is_empty(), "no system audio captured");
+        assert!(!mic_on || !mic_pcm.is_empty(), "no microphone audio captured");
+        if mic_on { write_wav_16k(&out_dir.join("mic.wav"), &resample_audio(&mic_pcm, mic_rate, 16000)); }
+        write_wav_16k(&out_dir.join("system.wav"), &resample_audio(&sys_pcm, sys_rate, 16000));
+    }
+}
+
+#[cfg(test)]
+mod loopback_probe {
+    use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+    use std::sync::atomic::{AtomicU32, Ordering};
+    use std::sync::Arc;
+
+    /// Renders a tone on the default output and reads it back through a loopback input stream.
+    #[test]
+    fn probe_loopback() {
+        if std::env::var("OC_CAPTURE_CHECK").as_deref() != Ok("1") {
+            return;
+        }
+        let host = cpal::default_host();
+        let dev = host.default_output_device().unwrap();
+        let out_cfg = dev.default_output_config().unwrap();
+        eprintln!("probe device: {} | default output config: {:?}", dev.name().unwrap(), out_cfg);
+        for c in dev.supported_output_configs().unwrap() {
+            eprintln!("  supported output: {:?}", c);
+        }
+
+        let (rate, ch) = (out_cfg.sample_rate().0 as f32, out_cfg.channels() as usize);
+        let mut t = 0f32;
+        let rendered = Arc::new(AtomicU32::new(0));
+        let rendered_cb = rendered.clone();
+        let render = dev
+            .build_output_stream(
+                &out_cfg.config(),
+                move |buf: &mut [f32], _| {
+                    rendered_cb.fetch_add(buf.len() as u32, Ordering::Relaxed);
+                    for frame in buf.chunks_mut(ch) {
+                        let v = (t * 440.0 * std::f32::consts::TAU).sin() * 0.2;
+                        t = (t + 1.0 / rate) % 1.0;
+                        frame.iter_mut().for_each(|x| *x = v);
+                    }
+                },
+                |e| eprintln!("render error: {e}"),
+                None,
+            )
+            .unwrap();
+        render.play().unwrap();
+
+        let peak = Arc::new(AtomicU32::new(0));
+        let frames = Arc::new(AtomicU32::new(0));
+        let (p, f) = (peak.clone(), frames.clone());
+        let capture = dev
+            .build_input_stream(
+                &out_cfg.config(),
+                move |data: &[f32], _| {
+                    f.fetch_add(data.len() as u32, Ordering::Relaxed);
+                    let m = data.iter().fold(0f32, |a, x| a.max(x.abs()));
+                    p.fetch_max(m.to_bits(), Ordering::Relaxed);
+                },
+                |e| eprintln!("capture error: {e}"),
+                None,
+            )
+            .unwrap();
+        capture.play().unwrap();
+        std::thread::sleep(std::time::Duration::from_secs(4));
+        eprintln!("rendered samples: {}", rendered.load(Ordering::Relaxed));
+        eprintln!("loopback samples: {}, peak: {}", frames.load(Ordering::Relaxed), f32::from_bits(peak.load(Ordering::Relaxed)));
+    }
+}
