@@ -320,9 +320,16 @@ impl AudioCapture {
 
             (ns, hpf, norm)
         } else {
-            // System audio: no enhancement needed
-            info!("ℹ️ System audio '{}' captured raw (no enhancement)", device.name);
-            (None, None, None)
+            // System audio: loudness only. WASAPI loopback follows the user's output volume,
+            // so a quiet speaker setting otherwise starves VAD and Whisper.
+            let norm = match LoudnessNormalizer::new(1, TARGET_SAMPLE_RATE) {
+                Ok(normalizer) => Some(normalizer),
+                Err(e) => {
+                    warn!("Failed to create normalizer for system audio: {}, normalization disabled", e);
+                    None
+                }
+            };
+            (None, None, norm)
         };
 
         // CRITICAL FIX: Initialize persistent resampler to preserve energy across chunks
@@ -581,6 +588,10 @@ impl AudioCapture {
                         debug!("🎤 After normalization chunk {}: RMS={:.4}, Peak={:.4}", chunk_id, rms, peak);
                     }
                 }
+            }
+        } else if let Ok(mut normalizer_lock) = self.normalizer.lock() {
+            if let Some(ref mut normalizer) = *normalizer_lock {
+                mono_data = normalizer.normalize_loudness(&mono_data);
             }
         }
 
