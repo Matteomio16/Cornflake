@@ -11,7 +11,7 @@ export function About() {
     return (
         <div className="p-4 space-y-4 h-[80vh] overflow-y-auto">
             <div className="text-center">
-                <h1 className="text-xl font-semibold text-gray-900">Open Cornflake</h1>
+                <h1 className="text-xl font-semibold text-gray-900">Cornflake</h1>
                 {version && <p className="text-sm text-gray-500">Version {version}</p>}
             </div>
             <p className="text-sm text-gray-700">
@@ -23,7 +23,7 @@ export function About() {
                 all participants before recording a conversation. You are responsible for obtaining it.
             </p>
             <div className="pt-2 border-t border-gray-200 text-xs text-gray-500">
-                Open Cornflake is MIT licensed and based on Meetily, copyright 2024 Zackriya Solutions.
+                Cornflake is MIT licensed and based on Meetily, copyright 2024 Zackriya Solutions.
             </div>
         </div>
     );

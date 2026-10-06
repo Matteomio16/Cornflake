@@ -23,7 +23,7 @@ pub fn create_tray<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
 
     TrayIconBuilder::with_id("main-tray")
         .menu(&menu)
-        .tooltip("Open Cornflake")
+        .tooltip("Cornflake")
         .icon(app.default_window_icon().unwrap().clone())
         .on_menu_event(|app, event| handle_menu_event(app, event.id.as_ref()))
         .build(app)?;
@@ -204,11 +204,11 @@ fn apply_state_visuals<R: Runtime>(app: &AppHandle<R>, state: &RecordingState) {
     let Some(tray) = app.tray_by_id("main-tray") else { return };
     let (tooltip, live) = match state {
         RecordingState::Recording | RecordingState::Resuming | RecordingState::Stopping => {
-            ("Open Cornflake - recording microphone and system audio", true)
+            ("Cornflake - recording microphone and system audio", true)
         }
-        RecordingState::Starting => ("Open Cornflake - starting", true),
-        RecordingState::Paused | RecordingState::Pausing => ("Open Cornflake - paused", false),
-        RecordingState::Stopped => ("Open Cornflake - idle", false),
+        RecordingState::Starting => ("Cornflake - starting", true),
+        RecordingState::Paused | RecordingState::Pausing => ("Cornflake - paused", false),
+        RecordingState::Stopped => ("Cornflake - idle", false),
     };
     let _ = tray.set_tooltip(Some(tooltip));
     let Some(base) = app.default_window_icon() else { return };

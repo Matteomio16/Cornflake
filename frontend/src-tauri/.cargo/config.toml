@@ -11,3 +11,12 @@ rustflags = [
 [env]
 MACOSX_DEPLOYMENT_TARGET = { value = "14.2", force = true }
 CMAKE_OSX_DEPLOYMENT_TARGET = "14.2"
+# Windows/MSVC whisper.cpp build (forwarded by whisper-rs-sys as CMake defines).
+# cmake-rs replaces the Release flags without /O2, which made release builds about 8x slower than debug.
+# WHISPER_NATIVE=OFF plus explicit AVX2 keeps CI-built installers portable instead of targeting the build machine.
+# These are MSVC flags: move them to a per-target build step before the macOS build.
+WHISPER_NATIVE = "OFF"
+CMAKE_C_FLAGS_RELEASE = "/O2 /Ob2 /DNDEBUG /arch:AVX2 /D__FMA__ /D__F16C__"
+CMAKE_CXX_FLAGS_RELEASE = "/O2 /Ob2 /DNDEBUG /arch:AVX2 /D__FMA__ /D__F16C__"
+CMAKE_C_FLAGS_RELWITHDEBINFO = "/O2 /Ob1 /DNDEBUG /arch:AVX2 /D__FMA__ /D__F16C__"
+CMAKE_CXX_FLAGS_RELWITHDEBINFO = "/O2 /Ob1 /DNDEBUG /arch:AVX2 /D__FMA__ /D__F16C__"

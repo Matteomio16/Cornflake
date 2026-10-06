@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Open Cornflake: local meeting notes for Windows 11. MIT fork of Meetily v0.4.1 (Zackriya Solutions); keep the upstream copyright in LICENSE.md.
+Cornflake: local meeting notes for Windows 11. MIT fork of Meetily v0.4.1 (Zackriya Solutions); keep the upstream copyright in LICENSE.md.
 
 ## Stack
 Tauri 2 (Rust core in `frontend/src-tauri`) + Next.js 14 static export (`frontend`). SQLite via sqlx. Whisper via whisper-rs, Parakeet via ort.

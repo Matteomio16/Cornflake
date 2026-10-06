@@ -43,36 +43,36 @@ impl Default for RecordingPreferences {
 pub fn get_default_recordings_folder() -> PathBuf {
     #[cfg(target_os = "windows")]
     {
-        // Windows: %USERPROFILE%\Music\open-cornflake-recordings
+        // Windows: %USERPROFILE%\Music\cornflake-recordings
         if let Some(music_dir) = dirs::audio_dir() {
-            music_dir.join("open-cornflake-recordings")
+            music_dir.join("cornflake-recordings")
         } else {
             // Fallback to Documents if Music folder is not available
             dirs::document_dir()
                 .unwrap_or_else(|| PathBuf::from("."))
-                .join("open-cornflake-recordings")
+                .join("cornflake-recordings")
         }
     }
 
     #[cfg(target_os = "macos")]
     {
-        // macOS: ~/Movies/open-cornflake-recordings
+        // macOS: ~/Movies/cornflake-recordings
         if let Some(movies_dir) = dirs::video_dir() {
-            movies_dir.join("open-cornflake-recordings")
+            movies_dir.join("cornflake-recordings")
         } else {
             // Fallback to Documents if Movies folder is not available
             dirs::document_dir()
                 .unwrap_or_else(|| PathBuf::from("."))
-                .join("open-cornflake-recordings")
+                .join("cornflake-recordings")
         }
     }
 
     #[cfg(not(any(target_os = "windows", target_os = "macos")))]
     {
-        // Linux/Others: ~/Documents/open-cornflake-recordings
+        // Linux/Others: ~/Documents/cornflake-recordings
         dirs::document_dir()
             .unwrap_or_else(|| PathBuf::from("."))
-            .join("open-cornflake-recordings")
+            .join("cornflake-recordings")
     }
 }
 

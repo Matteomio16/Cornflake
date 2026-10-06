@@ -22,6 +22,9 @@ fn transcribe(ctx: &WhisperContext, audio: &[f32]) -> String {
     params.set_language(Some("en"));
     params.set_print_progress(false);
     params.set_print_realtime(false);
+    if let Ok(n) = std::env::var("OC_THREADS") {
+        params.set_n_threads(n.parse().unwrap());
+    }
     state.full(params, audio).unwrap();
     (0..state.full_n_segments().unwrap())
         .map(|i| state.full_get_segment_text(i).unwrap())

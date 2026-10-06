@@ -1,8 +1,8 @@
 [package]
-name = "open-cornflake"
+name = "cornflake"
 version = "0.4.1"
 description = "Local meeting notes"
-authors = ["Open Cornflake contributors"]
+authors = ["Cornflake contributors"]
 license = "MIT"
 edition = "2021"
 rust-version = "1.77"
