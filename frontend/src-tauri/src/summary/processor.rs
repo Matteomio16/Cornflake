@@ -397,7 +397,7 @@ pub(crate) async fn generate_meeting_summary(
             let successful_chunk_count;
             let mut stage_reasoning_stripped = false;
 
-            if (provider == &LLMProvider::Ollama || provider == &LLMProvider::BuiltInAI)
+            if provider == &LLMProvider::Ollama
                 && total_tokens >= token_threshold
             {
                 let chunks = chunk_text(text, token_threshold - 300, 100);

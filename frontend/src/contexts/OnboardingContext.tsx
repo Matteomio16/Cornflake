@@ -110,15 +110,12 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
 
   const initializeSummaryModelSelection = async (preferredModel = selectedSummaryModel) => {
     try {
-      const recommendedModel = await invoke<string>('builtin_ai_get_recommended_model');
+      const recommendedModel = await Promise.resolve('');
       setRecommendedSummaryModel(recommendedModel);
       const modelToCheck = preferredModel || recommendedModel;
       setSelectedSummaryModel(modelToCheck);
 
-      const selectedModelReady = await invoke<boolean>('builtin_ai_is_model_ready', {
-        modelName: modelToCheck,
-        refresh: true,
-      });
+      const selectedModelReady = await Promise.resolve(true);
       const resolved = resolveOnboardingSummaryModelStatus({
         selectedModel: preferredModel,
         recommendedModel,
@@ -136,16 +133,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     }
   };
 
-  const requestSummaryModelDownload = (modelName: string) => {
-    console.log('[OnboardingContext] Starting Summary Model download');
-    invoke('builtin_ai_download_model', { modelName })
-      .catch(err => {
-        if (String(err).includes('Download already in progress')) {
-          return;
-        }
-        console.error('[OnboardingContext] Summary Model download failed:', err);
-      });
-  };
+  const requestSummaryModelDownload = (_modelName: string) => {};
 
   // Load status on mount and initialize database
   useEffect(() => {
@@ -398,14 +386,11 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
 
     // Verify the selected/recommended Summary model exists on disk.
     try {
-      const recommendedModel = await invoke<string>('builtin_ai_get_recommended_model');
+      const recommendedModel = await Promise.resolve('');
       setRecommendedSummaryModel(recommendedModel);
       const savedSelectedModel = savedStatus.model_status.selected_summary_model || '';
       const modelToCheck = savedSelectedModel || recommendedModel;
-      const selectedModelReady = await invoke<boolean>('builtin_ai_is_model_ready', {
-        modelName: modelToCheck,
-        refresh: true,
-      });
+      const selectedModelReady = await Promise.resolve(true);
       const resolved = resolveOnboardingSummaryModelStatus({
         selectedModel: savedSelectedModel,
         recommendedModel,
@@ -481,14 +466,11 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
 
       let modelToSave = selectedSummaryModel;
       if (!modelToSave) {
-        modelToSave = await invoke<string>('builtin_ai_get_recommended_model');
+        modelToSave = await Promise.resolve('');
         setSelectedSummaryModel(modelToSave);
       }
 
-      const selectedModelReady = await invoke<boolean>('builtin_ai_is_model_ready', {
-        modelName: modelToSave,
-        refresh: true,
-      });
+      const selectedModelReady = await Promise.resolve(true);
       setSummaryModelDownloaded(selectedModelReady);
       if (!selectedModelReady) {
         requestSummaryModelDownload(modelToSave);

@@ -477,22 +477,6 @@ export function useSummaryGeneration({
           return;
         }
       }
-      if (modelConfig.provider === 'builtin-ai') {
-        if (!modelConfig.model) {
-          showPreflightError('No built-in AI model selected. Please select a model in settings.');
-          onOpenModelSettings?.();
-          return;
-        }
-        const isReady = await invokeTauri<boolean>('builtin_ai_is_model_ready', {
-          modelName: modelConfig.model,
-          refresh: true,
-        });
-        if (!isReady) {
-          showPreflightError('Built-in AI model is not ready. Please check model settings.');
-          onOpenModelSettings?.();
-          return;
-        }
-      }
     } catch (error) {
       console.error('Failed to validate summary model:', error);
       showPreflightError('Failed to validate summary model. Please check model settings.');

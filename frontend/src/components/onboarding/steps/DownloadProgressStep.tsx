@@ -131,7 +131,6 @@ export function DownloadProgressStep() {
       if (!modelName) {
         throw new Error('Summary model recommendation is not ready yet');
       }
-      await invoke('builtin_ai_download_model', { modelName });
     } catch (error) {
       console.error('[DownloadProgressStep] Summary retry failed:', error);
       setSummaryState((prev) => ({

@@ -181,8 +181,8 @@ pub async fn complete_onboarding<R: Runtime>(
     // Onboarding always uses builtin-ai (local LLM)
     if let Err(e) = SettingsRepository::save_model_config(
         pool,
-        "builtin-ai",
-        &model,
+        "openai",
+        "gpt-4o-mini",
         "large-v3",
         None,
     ).await {
