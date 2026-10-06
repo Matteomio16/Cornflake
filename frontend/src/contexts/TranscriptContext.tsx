@@ -315,6 +315,7 @@ export function TranscriptProvider({ children }: { children: ReactNode }) {
             audio_start_time: update.audio_start_time,
             audio_end_time: update.audio_end_time,
             duration: update.duration,
+            speaker: update.source === 'me' || update.source === 'them' ? update.source : undefined,
           };
 
           // Add to buffer
@@ -424,6 +425,7 @@ export function TranscriptProvider({ children }: { children: ReactNode }) {
       audio_start_time: update.audio_start_time,
       audio_end_time: update.audio_end_time,
       duration: update.duration,
+      speaker: update.source === 'me' || update.source === 'them' ? update.source : undefined,
     };
 
     setTranscripts(prev => {
