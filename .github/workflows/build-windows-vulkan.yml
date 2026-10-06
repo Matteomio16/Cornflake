@@ -1,0 +1,58 @@
+name: Build Windows (Vulkan)
+
+# Manual only. Produces an unsigned installer as a workflow artifact; never creates a release.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 120
+    env:
+      LIBCLANG_PATH: C:\Program Files\LLVM\bin
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> target"
+          key: vulkan
+
+      - name: Install Vulkan SDK (runner only)
+        uses: jakoch/install-vulkan-sdk-action@v1
+        with:
+          vulkan_version: latest
+          optional_components: com.lunarg.vulkan.vma
+          install_runtime: true
+          cache: true
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Build installer
+        working-directory: frontend
+        run: pnpm tauri build --features vulkan
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cornflake-windows-vulkan
+          path: |
+            target/release/bundle/nsis/*.exe
+            target/release/bundle/msi/*.msi
+          if-no-files-found: error
