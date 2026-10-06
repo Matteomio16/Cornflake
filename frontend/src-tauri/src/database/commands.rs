@@ -192,8 +192,8 @@ pub async fn initialize_fresh_database(app: AppHandle) -> Result<(), String> {
     
     if let Err(e) = crate::database::repositories::setting::SettingsRepository::save_model_config(
         pool,
-        "openai",
-        "gpt-4o-mini",
+        "openrouter",
+        "z-ai/glm-5.3-flash",
         "large-v3",
         None,
     ).await {
