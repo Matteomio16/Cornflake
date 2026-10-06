@@ -56,7 +56,7 @@ jobs:
         run: |
           export ORT_DYLIB_PATH="$(pwd -W)/binaries/onnxruntime/onnxruntime.dll"
           # Hosted runners have no audio devices: skip tests that open real hardware.
-          cargo test --lib -- --skip test_calculate_buffer_timeout_bluetooth --skip playback_monitor --skip overlapping_mic
+          cargo test --lib -- --skip test_calculate_buffer_timeout_bluetooth --skip playback_monitor --skip overlapping_mic --test-threads=1
 
       - name: Two-channel pipeline test (needs ONNX Runtime)
         working-directory: frontend/src-tauri
