@@ -1,0 +1,47 @@
+{
+  "id": "case13",
+  "language": "it",
+  "template": "general",
+  "project": "personal",
+  "title_hint": "Call with the landlady about a leaking tap and the lease renewal",
+  "user_notes": "- rubinetto bagno perde\n- idraulico marco giov 9-11\n- rinnovo fine nov, +50 euro?\n- risp entro 30 ott\n- assicurazione casa domani\n- caparra ok",
+  "segments": [
+    {"start": 0, "speaker": "me", "text": "Buongiorno signora Ferri, la chiamo per il contratto e per la perdita in bagno."},
+    {"start": 8, "speaker": "them", "text": "Buongiorno. Sì, mi dica."},
+    {"start": 12, "speaker": "me", "text": "Allora, dal rubinetto del bagno perde acqua da una settimana, e sotto il lavandino c'è, ehm, un po' di umido."},
+    {"start": 25, "speaker": "them", "text": "Ah, mi dispiace. Mando l'idraulico, Marco, giovedì mattina. Le va bene?"},
+    {"start": 35, "speaker": "me", "text": "Giovedì va benissimo, sono a casa fino a mezzogiorno."},
+    {"start": 43, "speaker": "them", "text": "Allora chiamo Marco e gli do il suo numero, passa giovedì tra le nove e le undici."},
+    {"start": 55, "speaker": "me", "text": "Perfetto. E per il rinnovo del contratto, scade a fine novembre."},
+    {"start": 63, "speaker": "them", "text": "Sì, lo so. Vorrei aumentare l'affitto di, tipo, cinquanta euro, per l'inflazione."},
+    {"start": 74, "speaker": "me", "text": "Cinquanta mi sembra tanto. Posso pensarci e risponderle?"},
+    {"start": 81, "speaker": "them", "text": "Certo, mi faccia sapere entro fine mese."},
+    {"start": 88, "speaker": "me", "text": "Va bene, le rispondo entro il trenta ottobre."},
+    {"start": 97, "speaker": "them", "text": "Intanto ho bisogno di una copia della sua assicurazione per la casa."},
+    {"start": 105, "speaker": "me", "text": "Gliela mando via mail domani."},
+    {"start": 112, "speaker": "them", "text": "Grazie. Ah, e se vuole potrebbe prolungare di due anni invece di uno, magari le faccio un prezzo migliore."},
+    {"start": 126, "speaker": "me", "text": "Interessante, ci rifletto. Non so ancora se resto a Milano."},
+    {"start": 134, "speaker": "them", "text": "Capisco. Il condominio forse cambierà anche l'amministratore, ma non è sicuro."},
+    {"start": 144, "speaker": "me", "text": "Ok. A proposito, ho già pagato la caparra l'anno scorso, giusto?"},
+    {"start": 151, "speaker": "them", "text": "Sì sì, quella è a posto."},
+    {"start": 158, "speaker": "me", "text": "Bene. Allora ci sentiamo dopo il sopralluogo di Marco?"},
+    {"start": 165, "speaker": "them", "text": "Sì, ci sentiamo venerdì, ok?"},
+    {"start": 170, "speaker": "me", "text": "Ok, venerdì. Grazie mille, buona giornata."},
+    {"start": 175, "speaker": "them", "text": "Altrettanto, arrivederci."}
+  ],
+  "expected": {
+    "action_items": [
+      {"task": "Call the plumber Marco and give him the tenant's number, visit Thursday between nine and eleven", "owner": "Signora Ferri", "segment_index": 6},
+      {"task": "Reply about the rent increase by 30 October", "owner": "Me", "segment_index": 11},
+      {"task": "Email a copy of the home insurance tomorrow", "owner": "Me", "segment_index": 13}
+    ],
+    "decisions": [
+      {"text": "Plumber visit on Thursday morning", "segment_index": 5}
+    ],
+    "non_action_traps": [
+      "Possible two-year extension at a better price (hypothetical offer)",
+      "Condominium might change the administrator (not certain)",
+      "Deposit already paid last year (done)"
+    ]
+  }
+}

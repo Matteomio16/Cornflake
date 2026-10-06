@@ -1,0 +1,53 @@
+{
+  "id": "case14",
+  "language": "it",
+  "template": "investor_meeting",
+  "project": "atlas-fund",
+  "title_hint": "Seed pitch from two founders of an industrial visual inspection startup",
+  "user_notes": "- 7 clienti, 3 live, arr 340k\n- ciclo 4-5 mesi\n- cac ~30k??\n- tam 600m (ottimistico)\n- ask 2m a 10m pre\n- cap table, angel 5% pro rata\n- partner giov",
+  "segments": [
+    {"start": 0, "speaker": "me", "text": "Buongiorno Giorgio, buongiorno Elena. Grazie per essere qui, ho letto il deck ma mi piacerebbe sentirlo da voi."},
+    {"start": 10, "speaker": "them", "text": "Grazie a lei. Allora, in due parole, noi facciamo ispezione visiva con l'intelligenza artificiale per le linee di produzione."},
+    {"start": 24, "speaker": "them", "text": "Esatto, telecamere sulla linea e un modello che rileva i difetti in tempo reale, sul posto, niente cloud."},
+    {"start": 36, "speaker": "me", "text": "Perfetto, quindi edge. Quanti clienti paganti avete?"},
+    {"start": 42, "speaker": "them", "text": "Sette, di cui tre in produzione piena. L'ARR è circa, ehm, trecentoquaranta mila euro."},
+    {"start": 55, "speaker": "me", "text": "E il ciclo di vendita?"},
+    {"start": 59, "speaker": "them", "text": "Lungo, purtroppo, quattro, cinque mesi. Sono pilot da tre mesi e poi il contratto annuale."},
+    {"start": 72, "speaker": "me", "text": "E il CAC? Quanto vi costa acquisire un cliente?"},
+    {"start": 79, "speaker": "them", "text": "Ehm, con il fondatore che vende direttamente, diciamo trenta k a cliente, ma non è una stima precisa."},
+    {"start": 92, "speaker": "me", "text": "Capisco. Il mercato, il TAM, come lo calcolate?"},
+    {"start": 99, "speaker": "them", "text": "Ci sono circa quarantamila stabilimenti in Europa che sono adatti, a una media di quindici k all'anno, fa seicento milioni."},
+    {"start": 114, "speaker": "me", "text": "Mi sembra ottimistico, ma ok. Cosa state cercando, quanto e a che condizioni?"},
+    {"start": 123, "speaker": "them", "text": "Due milioni di euro, round seed, con un SAFE o un equity round, siamo flessibili, a una pre-money di dieci milioni."},
+    {"start": 138, "speaker": "me", "text": "Chi è già dentro il cap table?"},
+    {"start": 143, "speaker": "them", "text": "Noi due al settanta per cento, un angel al cinque, e poi il pool, ehm, del dieci."},
+    {"start": 156, "speaker": "me", "text": "Chiaro. Con il pro rata come siete messi con l'angel?"},
+    {"start": 164, "speaker": "them", "text": "Ha il diritto di pro rata nello SAFE precedente, sì."},
+    {"start": 172, "speaker": "me", "text": "Ok. Mi mandate il cap table aggiornato e la lista dei sette clienti con i contratti?"},
+    {"start": 183, "speaker": "them", "text": "Sì, le mando tutto entro lunedì, anche il data room."},
+    {"start": 192, "speaker": "me", "text": "Bene. Io lo porto alla riunione dei partner di giovedì prossimo e le faccio sapere subito dopo."},
+    {"start": 204, "speaker": "them", "text": "Ottimo. Se andasse bene, potremmo anche pensare di assumere un VP Sales in Germania, tipo a gennaio."},
+    {"start": 216, "speaker": "me", "text": "Vedremo. Una cosa, il vostro prodotto funziona su Kubernetes o è un'appliance?"},
+    {"start": 224, "speaker": "them", "text": "Appliance, ma stiamo pensando di offrire anche un'opzione Kubernetes, forse l'anno prossimo."},
+    {"start": 236, "speaker": "me", "text": "Capito. Allora, decisione per oggi, andiamo avanti con la due diligence, tecnica prima."},
+    {"start": 247, "speaker": "them", "text": "Perfetto. Elena organizza la demo tecnica con il nostro CTO la settimana prossima."},
+    {"start": 258, "speaker": "me", "text": "Molto bene, grazie."},
+    {"start": 262, "speaker": "them", "text": "Grazie a lei. Ah, il deck l'ho già inviato ieri alla sua assistente."},
+    {"start": 270, "speaker": "me", "text": "Sì, l'ho visto. Buona giornata."}
+  ],
+  "expected": {
+    "action_items": [
+      {"task": "Send the updated cap table, the list of seven customers with contracts and the data room by Monday", "owner": "Giorgio", "segment_index": 19},
+      {"task": "Bring the deal to next Thursday's partner meeting and report back right after", "owner": "Me", "segment_index": 20},
+      {"task": "Organize the technical demo with the CTO next week", "owner": "Elena", "segment_index": 25}
+    ],
+    "decisions": [
+      {"text": "Proceed with due diligence, technical part first", "segment_index": 24}
+    ],
+    "non_action_traps": [
+      "Maybe hire a VP Sales in Germany in January (conditional idea)",
+      "Possible Kubernetes option next year (maybe)",
+      "Deck already sent yesterday to the assistant (done)"
+    ]
+  }
+}

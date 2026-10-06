@@ -82,6 +82,8 @@ pub struct NotesResult {
     pub prompt_tokens: u64,
     pub completion_tokens: u64,
     pub cost_usd: Option<f64>,
+    /// 1 when the first reply parsed, 2 when a retry was needed.
+    pub attempts: u32,
 }
 
 #[derive(Debug)]
@@ -327,7 +329,7 @@ pub async fn generate(
     let mut total = llm::LlmResult::default();
     let mut last_error = String::new();
     // One retry when the reply is not parseable JSON
-    for _ in 0..2 {
+    for attempt in 1..=2u32 {
         let res = llm::chat(cfg, prompts::NOTES_MERGE_SYSTEM, &user_prompt, true, 0.2)
             .await
             .map_err(NotesError::Llm)?;
@@ -350,6 +352,7 @@ pub async fn generate(
                     prompt_tokens: total.prompt_tokens,
                     completion_tokens: total.completion_tokens,
                     cost_usd: total.cost_usd,
+                    attempts: attempt,
                 });
             }
             Err(e) => last_error = e,

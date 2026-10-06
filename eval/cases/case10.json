@@ -1,0 +1,48 @@
+{
+  "id": "case10",
+  "language": "fr",
+  "template": "standup",
+  "project": "papillon-studio",
+  "title_hint": "Daily studio standup: mockups, a quote and a client changing colors again",
+  "user_notes": "- lea maquettes mobile -> camille jeu\n- hugo devis archi, manque impression\n- relancer imprimeur\n- client boulangerie couleur 3e fois\n- palette figee",
+  "segments": [
+    {"start": 0, "speaker": "me", "text": "Bonjour tout le monde, on fait vite, j'ai un rendez-vous à dix heures. Léa, tu commences ?"},
+    {"start": 8, "speaker": "them", "text": "Oui. Hier j'ai terminé les maquettes desktop pour le client de la boulangerie, euh, il reste le mobile."},
+    {"start": 20, "speaker": "them", "text": "Aujourd'hui je fais le mobile et je les envoie à Camille jeudi pour validation."},
+    {"start": 32, "speaker": "me", "text": "Parfait. Hugo ?"},
+    {"start": 35, "speaker": "them", "text": "Moi je suis sur le devis pour le cabinet d'architectes. Il me manque le, le prix de l'impression grand format."},
+    {"start": 46, "speaker": "me", "text": "Je relance l'imprimeur aujourd'hui, il devait me répondre depuis lundi."},
+    {"start": 56, "speaker": "them", "text": "Merci. Du coup je finis le devis demain et je te l'envoie pour relecture."},
+    {"start": 68, "speaker": "me", "text": "Ça marche. Léa, tu as des blocages ?"},
+    {"start": 73, "speaker": "them", "text": "Un peu, le client veut changer la, la couleur principale pour la troisième fois."},
+    {"start": 82, "speaker": "me", "text": "Bon. On s'en tient à la palette validée, point. Je préviens le client que le prochain changement sera facturé."},
+    {"start": 98, "speaker": "them", "text": "Super, merci."},
+    {"start": 101, "speaker": "them", "text": "Sinon, on devrait peut-être passer à Figma pour tout, ça serait plus simple, genre abandonner Sketch."},
+    {"start": 112, "speaker": "me", "text": "On verra ça au prochain trimestre, pas maintenant."},
+    {"start": 119, "speaker": "them", "text": "Ok. Autre chose, Camille a dit qu'elle avait déjà réservé la salle pour le workshop de vendredi."},
+    {"start": 131, "speaker": "me", "text": "Oui, je sais, c'est fait."},
+    {"start": 135, "speaker": "them", "text": "Léa, tu as les photos du showroom ? Ça m'aiderait pour la présentation."},
+    {"start": 142, "speaker": "them", "text": "Oui, je te les envoie tout à l'heure."},
+    {"start": 150, "speaker": "me", "text": "Bien. Autre chose avant de finir ?"},
+    {"start": 155, "speaker": "them", "text": "Non, rien pour moi."},
+    {"start": 158, "speaker": "them", "text": "Moi non plus. Ah si, il pleut encore, j'ai oublié mon parapluie, c'est mon moment de gloire."},
+    {"start": 167, "speaker": "me", "text": "Ha ha. Bon, bonne journée."},
+    {"start": 171, "speaker": "them", "text": "À tout à l'heure."}
+  ],
+  "expected": {
+    "action_items": [
+      {"task": "Finish the mobile mockups and send them to Camille on Thursday for validation", "owner": "Léa", "segment_index": 3},
+      {"task": "Chase the printer for the large-format printing price today", "owner": "Me", "segment_index": 6},
+      {"task": "Finish the architects' quote tomorrow and send it for review", "owner": "Hugo", "segment_index": 7},
+      {"task": "Tell the bakery client that the next change will be billed", "owner": "Me", "segment_index": 10},
+      {"task": "Send Hugo the showroom photos later today", "owner": "Léa", "segment_index": 17}
+    ],
+    "decisions": [
+      {"text": "Stick to the validated color palette", "segment_index": 10}
+    ],
+    "non_action_traps": [
+      "Switch everything to Figma and drop Sketch (idea, postponed to next quarter)",
+      "Workshop room for Friday already booked (done)"
+    ]
+  }
+}

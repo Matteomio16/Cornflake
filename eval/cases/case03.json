@@ -1,0 +1,50 @@
+{
+  "id": "case03",
+  "language": "en",
+  "template": "sales_call",
+  "project": "papillon-studio",
+  "title_hint": "Discovery call with a prospect for a brand refresh and new website",
+  "user_notes": "- brand refresh + site\n- launch b4 sales kickoff nov\n- budget 45-50k, we ~58\n- 2 option proposal wed\n- vendor form/NDA from nadia\n- case studies x3",
+  "segments": [
+    {"start": 0, "speaker": "me", "text": "Hi Nadia, hi Sam, can you hear me okay?"},
+    {"start": 5, "speaker": "them", "text": "Yes, loud and clear. Hi."},
+    {"start": 9, "speaker": "me", "text": "Great. So, thanks for taking the time. I read your brief, um, you want a brand refresh plus a new site, is that right?"},
+    {"start": 22, "speaker": "them", "text": "Mostly yes. We rebranded, well, we kind of half rebranded two years ago and it's, it's a mess honestly."},
+    {"start": 34, "speaker": "them", "text": "Sam can say more, but the logo is okay, the rest is inconsistent."},
+    {"start": 42, "speaker": "them", "text": "Yeah, the, uh, the design system basically doesn't exist. Every team makes their own slides."},
+    {"start": 53, "speaker": "me", "text": "Got it. What's the timeline you have in mind?"},
+    {"start": 59, "speaker": "them", "text": "We'd love to launch before the, the sales kickoff in, like, early November."},
+    {"start": 68, "speaker": "me", "text": "That's tight, that's six, seven weeks. It's doable if we start by, by the twentieth and decisions are quick."},
+    {"start": 80, "speaker": "them", "text": "Decisions would be me and Sam, nobody else, I promise."},
+    {"start": 87, "speaker": "me", "text": "Okay. On budget, are you thinking project-based or a retainer?"},
+    {"start": 96, "speaker": "them", "text": "Project. Budget's around, hmm, forty-five k, maybe fifty with the site."},
+    {"start": 108, "speaker": "me", "text": "Our rebrand plus system usually lands closer to, uh, fifty-eight, and the site is on top of that."},
+    {"start": 120, "speaker": "them", "text": "Hm. That's more than we have. Could you scope a smaller version?"},
+    {"start": 130, "speaker": "me", "text": "Yes, I can do a two-option proposal, one lean at about forty-eight and one full. I'll send it by Wednesday."},
+    {"start": 145, "speaker": "them", "text": "That'd be great. I need to loop in procurement though, they have this vendor form."},
+    {"start": 156, "speaker": "me", "text": "Sure, send it over and we'll fill it in."},
+    {"start": 163, "speaker": "them", "text": "I'll email you the vendor form today, and the NDA too."},
+    {"start": 172, "speaker": "me", "text": "Perfect. Do you have examples you like, brands you admire?"},
+    {"start": 180, "speaker": "them", "text": "Um, we love like, the whole Scandinavian minimal thing. But, I mean, maybe we'll want motion graphics later, like an animated logo."},
+    {"start": 195, "speaker": "me", "text": "We can price that as an add-on later. Not in the first scope."},
+    {"start": 205, "speaker": "them", "text": "Right. Sam, you wanted to ask about references?"},
+    {"start": 211, "speaker": "them", "text": "Yes, do you have case studies in B2B SaaS? Our board will ask."},
+    {"start": 220, "speaker": "me", "text": "Yeah, I'll send you three, two SaaS and one fintech, along with the proposal."},
+    {"start": 232, "speaker": "them", "text": "Super. Then we reconvene Thursday next week?"},
+    {"start": 238, "speaker": "me", "text": "Thursday works, let's lock the same time. Thanks both."}
+  ],
+  "expected": {
+    "action_items": [
+      {"task": "Send a two-option proposal (lean about 48k and full) by Wednesday", "owner": "Me", "segment_index": 15},
+      {"task": "Email the vendor form and the NDA today", "owner": "Nadia", "segment_index": 18},
+      {"task": "Send three case studies (two SaaS, one fintech) with the proposal", "owner": "Me", "segment_index": 24}
+    ],
+    "decisions": [
+      {"text": "Prepare a two-option proposal, lean and full, because budget is below the usual price", "segment_index": 15}
+    ],
+    "non_action_traps": [
+      "Maybe motion graphics or an animated logo later (add-on idea, out of scope)",
+      "Wish to launch before the November sales kickoff (target, not a task)"
+    ]
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "id": "case11",
+  "language": "fr",
+  "template": "user_interview",
+  "project": "ferrovia",
+  "title_hint": "Interview with a freight dispatcher about how he books wagons today",
+  "user_notes": "- calls 4-5 operateurs + excel\n- 1-2h par relation\n- veut suivi wagon\n- paiement 30j\n- 40-50 wagons/mois\n- proto demain",
+  "segments": [
+    {"start": 0, "speaker": "me", "text": "Merci d'avoir accepté, Karim. Je peux enregistrer pour mes notes, c'est que pour moi."},
+    {"start": 7, "speaker": "them", "text": "Oui oui, pas de souci."},
+    {"start": 11, "speaker": "me", "text": "Alors, comment vous trouvez un train disponible aujourd'hui ?"},
+    {"start": 17, "speaker": "them", "text": "Franchement, euh, c'est beaucoup de téléphone. J'appelle quatre ou cinq opérateurs, je demande les créneaux, et je note tout dans un Excel."},
+    {"start": 31, "speaker": "me", "text": "Et ça prend combien de temps ?"},
+    {"start": 35, "speaker": "them", "text": "Pour une relation, une heure, parfois deux. Et si le prix change entre-temps, il faut recommencer."},
+    {"start": 47, "speaker": "me", "text": "Qu'est-ce qui vous inquiète le plus quand vous réservez ?"},
+    {"start": 54, "speaker": "them", "text": "Les retards. Et le, le suivi du wagon. Je veux savoir où il est, pas appeler pour demander."},
+    {"start": 66, "speaker": "me", "text": "Si vous aviez une page qui montre les créneaux et les prix en direct, vous l'utiliseriez ?"},
+    {"start": 76, "speaker": "them", "text": "Oui, mais il faut que les prix soient fiables. Sinon c'est inutile."},
+    {"start": 84, "speaker": "me", "text": "Vous payez comment, d'habitude ? À la réservation ou à la livraison ?"},
+    {"start": 91, "speaker": "them", "text": "À trente jours, normalement. Un paiement à la réservation, ça passerait mal chez nous."},
+    {"start": 101, "speaker": "me", "text": "Compris. Et le volume, vous réservez combien de wagons par mois ?"},
+    {"start": 108, "speaker": "them", "text": "Environ, euh, quarante, cinquante. Ça dépend de la saison."},
+    {"start": 117, "speaker": "me", "text": "Est-ce que vous voudriez de l'intégration avec votre TMS ?"},
+    {"start": 124, "speaker": "them", "text": "Un jour peut-être, on voudrait une API, mais ce n'est pas la priorité."},
+    {"start": 134, "speaker": "me", "text": "D'accord. Je vous envoie le lien du prototype demain, vous pourrez le tester et me dire ce qui manque."},
+    {"start": 148, "speaker": "them", "text": "Avec plaisir. Je ne promets pas de le faire cette semaine, j'ai le salon logistique."},
+    {"start": 158, "speaker": "me", "text": "Pas de problème, quand vous pouvez."},
+    {"start": 163, "speaker": "them", "text": "Ah, et ma collègue Sofia devrait aussi le voir, elle gère les réservations internationales."},
+    {"start": 175, "speaker": "me", "text": "Bonne idée, on verra ça après votre retour."},
+    {"start": 181, "speaker": "them", "text": "Parfait, merci à vous."}
+  ],
+  "expected": {
+    "action_items": [
+      {"task": "Send the prototype link tomorrow", "owner": "Me", "segment_index": 17}
+    ],
+    "decisions": [],
+    "non_action_traps": [
+      "API or TMS integration maybe one day (not a priority)",
+      "Testing the prototype this week (explicitly not promised)",
+      "Sofia should also see it (suggestion, deferred)"
+    ]
+  }
+}

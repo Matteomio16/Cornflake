@@ -1,0 +1,48 @@
+{
+  "id": "case08",
+  "language": "de",
+  "template": "sales_call",
+  "project": "ferrovia",
+  "title_hint": "Introductory call with a German shipper about rail freight capacity booking",
+  "user_notes": "- brandt duisburg-mailand 60 lkw/wk\n- schiene 15-20% billiger\n- puenktlichkeit wichtig\n- demo mit giulia\n- liste relationen bis di\n- 2% provision",
+  "segments": [
+    {"start": 0, "speaker": "me", "text": "Guten Tag Herr Brandt, danke, dass Sie sich Zeit nehmen. Ich bin im Beirat von Ferrovia und wollte Ihnen kurz erklären, was die machen."},
+    {"start": 12, "speaker": "them", "text": "Ja, gern. Ich hab nur zwanzig Minuten, dann habe ich den nächsten Termin."},
+    {"start": 20, "speaker": "me", "text": "Alles klar. Ferrovia ist ein Marktplatz für Schienengüterverkehr, man bucht Kapazität auf Zügen wie bei, ähm, einer Frachtbörse für die Straße."},
+    {"start": 36, "speaker": "them", "text": "Aha. Und wie viele Anbieter sind da drauf?"},
+    {"start": 41, "speaker": "me", "text": "Ungefähr vierzig Operatoren in Italien und Österreich, Deutschland kommt gerade dazu."},
+    {"start": 52, "speaker": "them", "text": "Hm. Unser Problem ist, wir fahren viel Lkw von Duisburg nach Mailand, das kostet, kostet uns jeden Monat..."},
+    {"start": 63, "speaker": "me", "text": "Wie viele Lkw ungefähr?"},
+    {"start": 67, "speaker": "them", "text": "So sechzig pro Woche, auf der Strecke. Vielleicht mehr im Herbst."},
+    {"start": 76, "speaker": "me", "text": "Dann könnte sich Schiene lohnen. Die Preise liegen typischerweise fünfzehn bis zwanzig Prozent unter Straße."},
+    {"start": 88, "speaker": "them", "text": "Und die Zuverlässigkeit? Wir hatten schlechte Erfahrungen mit Verspätungen."},
+    {"start": 96, "speaker": "me", "text": "Berechtigt. Ferrovia zeigt Pünktlichkeitsquoten pro Operator, das kann Ihnen Giulia, die CEO, im Detail zeigen."},
+    {"start": 109, "speaker": "them", "text": "Gut, das wäre interessant. Machen wir einen Demo-Termin."},
+    {"start": 116, "speaker": "me", "text": "Sehr gern. Ich schreibe Giulia heute noch und bitte sie, Ihnen nächste Woche zwei Termine vorzuschlagen."},
+    {"start": 130, "speaker": "them", "text": "Passt. Dafür bräuchte sie sicher meine Zahlen, oder?"},
+    {"start": 136, "speaker": "me", "text": "Ja, idealerweise Ihre Hauptstrecken und Volumen."},
+    {"start": 142, "speaker": "them", "text": "Ich schicke Ihnen bis Dienstag eine Liste mit den fünf wichtigsten Relationen und den Wochenmengen."},
+    {"start": 155, "speaker": "me", "text": "Wunderbar, die leite ich an Giulia weiter."},
+    {"start": 160, "speaker": "them", "text": "Und Zollthemen, das ist bei uns nicht so relevant, nur innerhalb der EU."},
+    {"start": 168, "speaker": "me", "text": "Genau, EU-intern gibt es da keine Hürde. Vielleicht kommt später auch Containerverkehr dazu, aber das ist Zukunftsmusik."},
+    {"start": 182, "speaker": "them", "text": "Ja, das wäre natürlich spannend. Wir könnten irgendwann auch Seefracht anschauen."},
+    {"start": 192, "speaker": "me", "text": "Ich denke, das ist ein guter Start. Noch Fragen?"},
+    {"start": 198, "speaker": "them", "text": "Nein. Ach, der Preis, gibt's eine Gebühr für den Marktplatz?"},
+    {"start": 205, "speaker": "me", "text": "Zwei Prozent Provision, aber das klärt Giulia im Detail."},
+    {"start": 213, "speaker": "them", "text": "Okay, danke, bis bald."}
+  ],
+  "expected": {
+    "action_items": [
+      {"task": "Write to Giulia today and ask her to propose two demo slots next week", "owner": "Me", "segment_index": 13},
+      {"task": "Send a list of the five most important lanes and weekly volumes by Tuesday", "owner": "Herr Brandt", "segment_index": 16},
+      {"task": "Forward the lane list to Giulia", "owner": "Me", "segment_index": 17}
+    ],
+    "decisions": [
+      {"text": "Schedule a demo with the Ferrovia CEO", "segment_index": 12}
+    ],
+    "non_action_traps": [
+      "Container traffic possibly later (future music, no task)",
+      "Might look at sea freight at some point (hypothetical)"
+    ]
+  }
+}

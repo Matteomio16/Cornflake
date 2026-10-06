@@ -1,0 +1,51 @@
+{
+  "id": "case01",
+  "language": "en",
+  "template": "one_on_one",
+  "project": "papillon-studio",
+  "title_hint": "1:1 with a designer about workload, junior hire and a late invoice",
+  "user_notes": "- jonas at 110%\n- tea client 4 rounds vs 2 quoted, my bad\n- junior: ines (lyon) portolio thurs\n- lumeo inv 3800 late\n- 4 day wk?? park\n- freelancer marta thru eom",
+  "segments": [
+    {"start": 0, "speaker": "me", "text": "Hey Jonas, thanks for making time. How was the weekend?"},
+    {"start": 6, "speaker": "them", "text": "Good, good. Bit tired, we had my sister's kid staying over, so, yeah."},
+    {"start": 14, "speaker": "me", "text": "Ha, I know that. Okay, so um, three things today, the junior hire, the Lumeo invoice, and your, your workload."},
+    {"start": 26, "speaker": "them", "text": "Right. Workload first maybe, because honestly I'm at like a hundred and ten percent."},
+    {"start": 35, "speaker": "me", "text": "Yeah. Which, which projects are eating it?"},
+    {"start": 41, "speaker": "them", "text": "Lumeo rebrand mostly, and the, the packaging thing for the tea client keeps coming back with revisions."},
+    {"start": 55, "speaker": "me", "text": "How many rounds is that now?"},
+    {"start": 60, "speaker": "them", "text": "Four. We quoted two."},
+    {"start": 66, "speaker": "me", "text": "Okay that's on me, I should have capped it in the contract. I'll write to them this week about, about the extra rounds being billable."},
+    {"start": 82, "speaker": "them", "text": "That would help a lot. And then the junior, did you, uh, did you look at the portfolios?"},
+    {"start": 92, "speaker": "me", "text": "I looked at three. The one from Lyon, Ines, was strong. I think, I think we should interview her and maybe one more."},
+    {"start": 105, "speaker": "them", "text": "Agreed. I could do the portfolio review call with her, I can do it Thursday if you send me the link."},
+    {"start": 118, "speaker": "me", "text": "Perfect, I'll send you the calendar invite today. And I'd say let's decide after Thursday, no rush beyond that."},
+    {"start": 130, "speaker": "them", "text": "Sure. Oh, and, we should maybe, you know, think about moving to a four-day week at some point. Everyone is burnt out."},
+    {"start": 145, "speaker": "me", "text": "Interesting, let's park it, I don't want to promise anything. Maybe at the next retreat."},
+    {"start": 155, "speaker": "them", "text": "Fine. On the Lumeo invoice, it's, uh, thirty-eight hundred, they're late by like two weeks."},
+    {"start": 168, "speaker": "me", "text": "I'll chase their finance person tomorrow morning."},
+    {"start": 178, "speaker": "them", "text": "Great. Also the font license, I already renewed it last week, so that's done."},
+    {"start": 190, "speaker": "me", "text": "Good. Okay so decision, we pay for the second freelancer for packaging through end of month instead of hiring someone just for that."},
+    {"start": 205, "speaker": "them", "text": "Yes, makes sense. I'll brief her, Marta, I'll send her the files tomorrow."},
+    {"start": 218, "speaker": "me", "text": "Great. Anything else?"},
+    {"start": 223, "speaker": "them", "text": "No, I think that's it. Oh wait, coffee machine's broken again."},
+    {"start": 232, "speaker": "me", "text": "Ha, someone should really fix that. Not my department."},
+    {"start": 240, "speaker": "them", "text": "Cool. Thanks."}
+  ],
+  "expected": {
+    "action_items": [
+      {"task": "Write to the tea client that extra revision rounds are billable", "owner": "Me", "segment_index": 9},
+      {"task": "Do the portfolio review call with Ines on Thursday", "owner": "Jonas", "segment_index": 12},
+      {"task": "Send Jonas the calendar invite for the call today", "owner": "Me", "segment_index": 13},
+      {"task": "Chase the Lumeo finance contact about the late invoice tomorrow morning", "owner": "Me", "segment_index": 17},
+      {"task": "Brief freelancer Marta and send her the files tomorrow", "owner": "Jonas", "segment_index": 20}
+    ],
+    "decisions": [
+      {"text": "Pay the second freelancer for packaging through end of month instead of hiring", "segment_index": 19}
+    ],
+    "non_action_traps": [
+      "Four-day week idea (parked, no commitment)",
+      "Font license already renewed last week (done)",
+      "Coffee machine should be fixed (nobody commits)"
+    ]
+  }
+}

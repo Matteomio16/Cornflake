@@ -1,0 +1,45 @@
+{
+  "id": "case05",
+  "language": "en",
+  "template": "user_interview",
+  "project": "cornflake-app",
+  "title_hint": "User interview with a consultant about how she writes up client calls",
+  "user_notes": "- dana consultant, 5 calls/day\n- 20 min writeup each\n- bot = dealbreaker, local only\n- wants action items, no halluc names\n- would pay 10-12/mo\n- beta link in 3wks",
+  "segments": [
+    {"start": 0, "speaker": "me", "text": "Thanks for doing this, Dana. Is it okay if I take notes on my laptop while we talk?"},
+    {"start": 6, "speaker": "them", "text": "Sure, go ahead. Just, um, I'm not saying anything confidential, right?"},
+    {"start": 12, "speaker": "me", "text": "No, just how you handle meetings. Walk me through your last client call, what did you do afterwards?"},
+    {"start": 22, "speaker": "them", "text": "So, I usually scribble in a notebook, then, uh, after the call I type it up in, like, Notion, which takes forever."},
+    {"start": 36, "speaker": "me", "text": "How long?"},
+    {"start": 38, "speaker": "them", "text": "Twenty minutes per call, maybe more. I do like five calls a day so, yeah, it adds up."},
+    {"start": 50, "speaker": "me", "text": "Have you tried any of the AI note tools?"},
+    {"start": 56, "speaker": "them", "text": "I tried a couple, the ones that join as a bot. My clients hated it. One literally asked me to leave the bot out."},
+    {"start": 70, "speaker": "me", "text": "So the bot in the call is a dealbreaker."},
+    {"start": 76, "speaker": "them", "text": "For me, yes. Anything that, that sends audio to some cloud, I can't, my clients are in, er, regulated industries."},
+    {"start": 90, "speaker": "me", "text": "If everything stayed on your laptop, would that change it?"},
+    {"start": 97, "speaker": "them", "text": "Totally. That's the thing that would make me, make me switch honestly."},
+    {"start": 106, "speaker": "me", "text": "What about the notes quality, what do you care about most?"},
+    {"start": 113, "speaker": "them", "text": "Action items. Who does what by when. And, um, not hallucinating names. It turned my client's name Dubois into Dubai once, which was hilarious but, no."},
+    {"start": 130, "speaker": "me", "text": "Ha. Do you want to edit the notes after?"},
+    {"start": 135, "speaker": "them", "text": "Yes, I'd edit everything. But a good first draft saves me the twenty minutes."},
+    {"start": 146, "speaker": "me", "text": "Pricing thoughts? Would you pay for it?"},
+    {"start": 151, "speaker": "them", "text": "Um, if it's local, I'd pay like ten, twelve euros a month. Not twenty."},
+    {"start": 162, "speaker": "me", "text": "Good to know. I'm hoping to have a beta build ready in about three weeks. I'll send you the link when it's ready."},
+    {"start": 175, "speaker": "them", "text": "Please do. I'll try it on a real call the following week and tell you what breaks."},
+    {"start": 186, "speaker": "me", "text": "Great, that would be super helpful. It supports French too, but accuracy there is still so-so."},
+    {"start": 196, "speaker": "them", "text": "Oh yeah, half my calls are in French. And I'd probably want a Notion export someday."},
+    {"start": 207, "speaker": "me", "text": "Noted. Anything I forgot to ask?"},
+    {"start": 212, "speaker": "them", "text": "No. Maybe ask the next person whether they'd pay yearly. Anyway, good luck."}
+  ],
+  "expected": {
+    "action_items": [
+      {"task": "Send Dana the beta build link when ready (about three weeks)", "owner": "Me", "segment_index": 19},
+      {"task": "Try the beta on a real call the week after and report what breaks", "owner": "Dana", "segment_index": 20}
+    ],
+    "decisions": [],
+    "non_action_traps": [
+      "Notion export wanted someday (feature wish)",
+      "Suggestion to ask the next interviewee about yearly pricing (suggestion, not a commitment)"
+    ]
+  }
+}

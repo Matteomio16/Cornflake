@@ -1,0 +1,41 @@
+{
+  "id": "case12",
+  "language": "fr",
+  "template": "one_on_one",
+  "project": "atlas-fund",
+  "title_hint": "Pipeline discussion with a fellow partner before the partners meeting, no commitments",
+  "user_notes": "- 32 deals, 4 2e appel\n- deeptech focus?\n- fonds dedie trop tot\n- skip le seed 30m pre\n- analyste ?",
+  "segments": [
+    {"start": 0, "speaker": "me", "text": "Salut Claire, merci. Je voulais discuter un peu de notre pipeline, avant la réunion des partenaires."},
+    {"start": 8, "speaker": "them", "text": "Oui, vas-y. Moi aussi j'ai des réflexions."},
+    {"start": 14, "speaker": "me", "text": "On a vu trente-deux deals ce mois-ci et seulement, euh, quatre qui valent un deuxième appel."},
+    {"start": 26, "speaker": "them", "text": "C'est normal pour le seed. Le vrai sujet c'est la qualité, pas la quantité."},
+    {"start": 36, "speaker": "me", "text": "D'accord. Mais je me demande si on devrait peut-être se concentrer sur la deeptech, genre énergie et logistique."},
+    {"start": 48, "speaker": "them", "text": "Intéressant. On pourrait aussi imaginer un fonds dédié, mais bon, c'est trop tôt pour en parler aux LPs."},
+    {"start": 60, "speaker": "me", "text": "Oui, je sais. Les LPs veulent surtout voir la performance du premier fonds."},
+    {"start": 70, "speaker": "them", "text": "Exactement. Au dernier update LP, ils ont bien aimé les chiffres de MRR du portefeuille."},
+    {"start": 82, "speaker": "me", "text": "Tu as vu l'équipe qui a levé à une valorisation dingue, genre trente millions pre-money au seed ?"},
+    {"start": 95, "speaker": "them", "text": "Oui, c'est n'importe quoi. Moi je passe."},
+    {"start": 101, "speaker": "me", "text": "Moi aussi. Le cap table était déjà compliqué avec les, les SAFE empilés."},
+    {"start": 112, "speaker": "them", "text": "C'est ça le problème."},
+    {"start": 116, "speaker": "me", "text": "Sinon, tu penses qu'on devrait embaucher un analyste ?"},
+    {"start": 123, "speaker": "them", "text": "Ce serait utile, mais je ne sais pas si le budget suit. Peut-être l'année prochaine."},
+    {"start": 134, "speaker": "me", "text": "Oui, peut-être. Je réfléchis aussi à écrire un post sur notre thèse."},
+    {"start": 143, "speaker": "them", "text": "Ça pourrait être bien pour le deal flow. À voir."},
+    {"start": 152, "speaker": "me", "text": "Ok. Et toi, les vacances, tu pars où ?"},
+    {"start": 158, "speaker": "them", "text": "En Bretagne, deux semaines, avec les enfants. Et toi ?"},
+    {"start": 166, "speaker": "me", "text": "Je reste à Paris, je dois finir des trucs. Allez, à lundi."},
+    {"start": 174, "speaker": "them", "text": "À lundi, bon week-end."}
+  ],
+  "expected": {
+    "action_items": [],
+    "decisions": [
+      {"text": "Both pass on the seed deal at a 30M pre-money valuation", "segment_index": 11}
+    ],
+    "non_action_traps": [
+      "Maybe focus on deeptech (energy and logistics) (open thought)",
+      "Maybe hire an analyst next year (budget unclear)",
+      "Thinking about writing a post on the thesis (not decided)"
+    ]
+  }
+}

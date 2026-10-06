@@ -79,3 +79,6 @@ target/
 frontend/src-tauri/binaries/
 # Synthetic TTS test fixtures (no real recordings)
 !frontend/src-tauri/tests/fixtures/*.wav
+
+# Eval run outputs (per-case notes); REPORT.md is committed
+eval/results/

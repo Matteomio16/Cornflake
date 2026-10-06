@@ -1,0 +1,53 @@
+{
+  "id": "case07",
+  "language": "de",
+  "template": "investor_meeting",
+  "project": "nordlicht",
+  "title_hint": "Quarterly board meeting of an energy software company, Q3 numbers and hiring",
+  "user_notes": "- arr 2.1m +12%\n- smb churn 3%/mo ugh\n- burn 180k, runway 18m\n- serie a fruehjahr, brauchen 3.5m arr\n- vp sales: 3 kandidaten\n- pro rata auflisten",
+  "segments": [
+    {"start": 0, "speaker": "me", "text": "Guten Morgen zusammen, lasst uns anfangen, wir haben eine Stunde."},
+    {"start": 6, "speaker": "them", "text": "Morgen. Ja, Katrin hat die Folien geteilt, ich geh einfach durch die Zahlen."},
+    {"start": 16, "speaker": "them", "text": "Genau. Also, Q3: ARR liegt bei, ähm, ungefähr zwei Komma eins Millionen, das ist plus zwölf Prozent zum Vorquartal."},
+    {"start": 30, "speaker": "me", "text": "Und der Churn?"},
+    {"start": 34, "speaker": "them", "text": "Brutto-Churn bei den kleinen Kunden ist noch hoch, so drei Prozent im Monat, bei Mid-Market fast null."},
+    {"start": 46, "speaker": "them", "text": "Das liegt vor allem an den SMB-Kunden, die wir über die Stadtwerke-Partnerschaft bekommen haben, die ziehen halt nicht richtig..."},
+    {"start": 58, "speaker": "me", "text": "Also eigentlich müssen wir den SMB-Zweig, ähm, entweder fixen oder..."},
+    {"start": 65, "speaker": "them", "text": "...oder einstellen, ja. Ich würde das gern im Q4 entscheiden."},
+    {"start": 73, "speaker": "me", "text": "Okay. Wie sieht der Burn aus?"},
+    {"start": 78, "speaker": "them", "text": "Burn ist rund hundertachtzig k pro Monat, Runway bei circa achtzehn Monaten, also bis, ähm, März übernächstes Jahr."},
+    {"start": 92, "speaker": "me", "text": "Und wann wollt ihr die nächste Runde starten? Serie A?"},
+    {"start": 99, "speaker": "them", "text": "Wir würden im Frühjahr anfangen. Die Investoren sagen, wir brauchen mindestens drei Komma fünf Millionen ARR, damit die uns ernst nehmen, bei einer Zeries A wollen die das sehen."},
+    {"start": 118, "speaker": "me", "text": "Das ist ambitioniert. Was ist mit einer Brücke, einem SAFE zum Beispiel?"},
+    {"start": 126, "speaker": "them", "text": "Wäre eine Option, falls der Vertrieb nicht anzieht. Aber heute nicht entschieden."},
+    {"start": 135, "speaker": "them", "text": "Zum Vertrieb: wir wollen einen VP Sales einstellen, Katrin sucht schon."},
+    {"start": 143, "speaker": "them", "text": "Ja, ich hab drei Kandidaten, zwei davon nächste Woche im Gespräch. Ich schicke dem Board bis Freitag ein kurzes Profil von jedem."},
+    {"start": 160, "speaker": "me", "text": "Gut. Ich kenne übrigens jemanden aus dem Energiebereich, der könnte passen. Ich schick dir die Kontaktdaten heute Abend."},
+    {"start": 172, "speaker": "them", "text": "Super, danke."},
+    {"start": 176, "speaker": "them", "text": "Stefan, das Board-Paket, wann kommt das?"},
+    {"start": 181, "speaker": "them", "text": "Ich schicke das finale Q3-Board-Paket bis Donnerstag, mit der Cap-Table-Aktualisierung."},
+    {"start": 192, "speaker": "me", "text": "Bitte auch die Pro-rata-Rechte nochmal sauber auflisten, ich brauche das für unseren Fonds."},
+    {"start": 202, "speaker": "them", "text": "Mach ich, die Pro-rata-Übersicht kommt mit dem Paket."},
+    {"start": 212, "speaker": "me", "text": "Okay. Dann zur Entscheidung: SMB-Zweig, wir warten bis zum Q4-Review?"},
+    {"start": 220, "speaker": "them", "text": "Ja, wir lassen es bis Ende November laufen und entscheiden dann endgültig."},
+    {"start": 231, "speaker": "me", "text": "Einverstanden. Und die Hiring-Pläne für die Kubernetes-Leute, ist das durch?"},
+    {"start": 240, "speaker": "them", "text": "Nee, das ist eher so eine Idee, vielleicht stellen wir im Frühjahr zwei DevOps ein, wenn das Budget da ist."},
+    {"start": 252, "speaker": "me", "text": "Gut. Wie ist das Wetter in Berlin, regnet es auch?"},
+    {"start": 258, "speaker": "them", "text": "Ha, grau wie immer. Danke euch, bis nächste Woche."}
+  ],
+  "expected": {
+    "action_items": [
+      {"task": "Send the board short profiles of the three VP Sales candidates by Friday", "owner": "Katrin", "segment_index": 16},
+      {"task": "Send contact details of a possible VP Sales candidate from the energy sector this evening", "owner": "Me", "segment_index": 17},
+      {"task": "Send the final Q3 board pack with cap table update by Thursday", "owner": "Stefan", "segment_index": 20},
+      {"task": "Include a clean pro rata rights overview in the board pack", "owner": "Stefan", "segment_index": 22}
+    ],
+    "decisions": [
+      {"text": "Let the SMB segment run until end of November, then make a final decision", "segment_index": 24}
+    ],
+    "non_action_traps": [
+      "Bridge round or SAFE as an option if sales does not pick up (not decided)",
+      "Maybe hire two DevOps engineers in spring if budget allows (idea)"
+    ]
+  }
+}

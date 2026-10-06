@@ -1,0 +1,48 @@
+{
+  "id": "case04",
+  "language": "en",
+  "template": "standup",
+  "project": "nordlicht",
+  "title_hint": "Engineering standup with code-switching between English and German",
+  "user_notes": "- lena invoice bug kwh rounding\n- felix k8s 1.29 staging\n- ahmed blocked on copy\n- churn dash screenshot fri\n- feature freeze til okr mon\n- intro grid operator",
+  "segments": [
+    {"start": 0, "speaker": "me", "text": "Morning everyone, I'm just listening in today. Lena, you start?"},
+    {"start": 6, "speaker": "them", "text": "Sure. So yesterday I finished the, uh, the tariff import for the, for the Stadtwerke pilot."},
+    {"start": 18, "speaker": "them", "text": "Today I'm on the invoice export bug, the one where kWh are rounded wrong, and um, I think I can fix it by tomorrow."},
+    {"start": 32, "speaker": "them", "text": "Felix?"},
+    {"start": 35, "speaker": "them", "text": "Ja, morning. Ich bin immer noch am Cluster-Upgrade, also Kubernetes one point twenty-nine, und es gibt Probleme mit dem Ingress."},
+    {"start": 50, "speaker": "them", "text": "Staging ist heute Nachmittag down, sorry, ich hab das im Channel geschrieben."},
+    {"start": 62, "speaker": "me", "text": "Will that affect the pilot demo on Thursday?"},
+    {"start": 68, "speaker": "them", "text": "Nein, nein, ich migriere staging bis Mittwoch Abend, dann ist alles stabil."},
+    {"start": 80, "speaker": "them", "text": "Ahmed, you're up."},
+    {"start": 83, "speaker": "them", "text": "Yeah, sorry, I was on mute. So I'm on the, the onboarding emails, and I'm blocked on copy from Nora."},
+    {"start": 98, "speaker": "them", "text": "Lena, can you ping Nora about that? She, um, she said she'd send it by Monday but I haven't seen it."},
+    {"start": 108, "speaker": "them", "text": "I'll ping her right after this, yes."},
+    {"start": 117, "speaker": "me", "text": "How's the churn dashboard, by the way? I'd like to show it in the board deck."},
+    {"start": 125, "speaker": "them", "text": "Half done. We could add, uh, cohort views too, that'd be super nice, maybe next sprint."},
+    {"start": 138, "speaker": "me", "text": "Not for this deck. Just the current numbers is fine."},
+    {"start": 145, "speaker": "them", "text": "Okay. Then I'll send you a screenshot of the churn dashboard by Friday."},
+    {"start": 156, "speaker": "them", "text": "One thing, OKR review is Monday, should we freeze new features until then?"},
+    {"start": 164, "speaker": "them", "text": "Ja, I think so. Wir machen Feature Freeze bis nach dem OKR Review."},
+    {"start": 175, "speaker": "me", "text": "Fine by me. Lena, I'll introduce you to my contact at the grid operator this week, he knows the tariff formats."},
+    {"start": 190, "speaker": "them", "text": "That would be amazing, danke."},
+    {"start": 195, "speaker": "them", "text": "We should also maybe rewrite the whole billing service in Rust at some point."},
+    {"start": 205, "speaker": "them", "text": "Haha, not this quarter. Okay, that's it from me."}
+  ],
+  "expected": {
+    "action_items": [
+      {"task": "Fix the invoice export kWh rounding bug by tomorrow", "owner": "Lena", "segment_index": 3},
+      {"task": "Migrate staging to the upgraded cluster by Wednesday evening", "owner": "Felix", "segment_index": 8},
+      {"task": "Ping Nora about the onboarding email copy", "owner": "Lena", "segment_index": 12},
+      {"task": "Send a screenshot of the churn dashboard by Friday", "owner": "Ahmed", "segment_index": 16},
+      {"task": "Introduce Lena to the grid operator contact this week", "owner": "Me", "segment_index": 19}
+    ],
+    "decisions": [
+      {"text": "Feature freeze until after the OKR review on Monday", "segment_index": 18}
+    ],
+    "non_action_traps": [
+      "Cohort views for the churn dashboard maybe next sprint (idea)",
+      "Rewrite the billing service in Rust at some point (wish, rejected for this quarter)"
+    ]
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "id": "case06",
+  "language": "en",
+  "template": "general",
+  "project": "cornflake-app",
+  "title_hint": "Casual architecture chat with a friend about a local transcription app, no commitments",
+  "user_notes": "",
+  "segments": [
+    {"start": 0, "speaker": "me", "text": "Okay so I wanted your take on the, the architecture thing before I go further."},
+    {"start": 7, "speaker": "them", "text": "Sure. Is this the notes app?"},
+    {"start": 12, "speaker": "me", "text": "Yeah. So right now transcription runs whisper locally, and then the summary goes to some API. I'm wondering if I should run the LLM locally too."},
+    {"start": 28, "speaker": "them", "text": "What model, like a seven b?"},
+    {"start": 33, "speaker": "me", "text": "Yeah, seven or eight b, quantized. But on a normal laptop it's, it's slow, like thirty seconds for a long meeting, if you're lucky."},
+    {"start": 47, "speaker": "them", "text": "I mean, honestly, I'd keep the API as default and offer local as an option."},
+    {"start": 56, "speaker": "me", "text": "That's, that's what I was thinking. Though maybe I should just try it first and see."},
+    {"start": 66, "speaker": "them", "text": "Also, you could, you know, maybe do a plugin system someday. Like people write their own templates."},
+    {"start": 76, "speaker": "me", "text": "Yeah, someday. That's a v2 thing, totally."},
+    {"start": 83, "speaker": "them", "text": "What about speaker labels? Do you have diarization?"},
+    {"start": 89, "speaker": "me", "text": "No, only me versus everyone else, mic versus system audio. It's simple but it works surprisingly well."},
+    {"start": 101, "speaker": "them", "text": "Right, that's smart actually. Oh, did you see the, uh, new Whisper turbo thing?"},
+    {"start": 110, "speaker": "me", "text": "Not yet. I should probably benchmark it at some point, but, honestly, no promises."},
+    {"start": 121, "speaker": "them", "text": "Ha. Anyway, how's the other thing, the design studio, are you swamped?"},
+    {"start": 130, "speaker": "me", "text": "Kind of. Paris is, it's raining nonstop, and we had a client call that went sideways."},
+    {"start": 143, "speaker": "them", "text": "Ugh. Weather here is the same. Did you ever get your bike fixed?"},
+    {"start": 152, "speaker": "me", "text": "No, the shop wanted two weeks. I'll probably just buy a new one."},
+    {"start": 162, "speaker": "them", "text": "Classic. Okay, so back to the app, are you gonna open source it?"},
+    {"start": 170, "speaker": "me", "text": "Yeah, it's MIT already. Fork of something else, so I have to keep their copyright in."},
+    {"start": 183, "speaker": "them", "text": "Makes sense. I could have a look at the code if you want, but I'm slammed until, like, December."},
+    {"start": 195, "speaker": "me", "text": "No pressure. Seriously."},
+    {"start": 199, "speaker": "them", "text": "Alright. Let's grab a beer when you're back in town."}
+  ],
+  "expected": {
+    "action_items": [],
+    "decisions": [],
+    "non_action_traps": [
+      "Maybe try a local LLM first and see (tentative idea)",
+      "Plugin system for templates someday (v2 idea)",
+      "Benchmark the new Whisper turbo at some point, no promises (explicitly not a commitment)"
+    ]
+  }
+}

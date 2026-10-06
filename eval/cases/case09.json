@@ -1,0 +1,47 @@
+{
+  "id": "case09",
+  "language": "de",
+  "template": "general",
+  "project": "personal",
+  "title_hint": "Phone call with the property manager about a utility bill and a broken lift",
+  "user_notes": "- nk nachzahlung 412 (!)\n- warmwasser zaehler falsch?\n- fotos zaehler mo\n- korrigierte abrechnung ende nw\n- zahlung ausgesetzt\n- aufzug kaputt",
+  "segments": [
+    {"start": 0, "speaker": "me", "text": "Guten Tag Frau Köhler, ich rufe wegen der Nebenkostenabrechnung an."},
+    {"start": 7, "speaker": "them", "text": "Ja, guten Tag. Welche Wohnung war das nochmal?"},
+    {"start": 12, "speaker": "me", "text": "Wiesenstraße vierzehn, dritter Stock links."},
+    {"start": 18, "speaker": "them", "text": "Moment... ja, ich hab's. Was ist das Problem?"},
+    {"start": 24, "speaker": "me", "text": "Da steht eine Nachzahlung von, ähm, vierhundertzwölf Euro, aber im Vorjahr hatte ich eine Gutschrift."},
+    {"start": 36, "speaker": "them", "text": "Ja, das liegt an den Heizkosten, die waren, ja, gestiegen, und der Zähler..."},
+    {"start": 46, "speaker": "me", "text": "Der Zählerstand für Warmwasser kommt mir falsch vor, der ist fast doppelt so hoch."},
+    {"start": 55, "speaker": "them", "text": "Das kann sein, da wurde im Frühjahr abgelesen und es gab einen Tippfehler. Ich prüfe das mit der Abrechnungsfirma."},
+    {"start": 70, "speaker": "me", "text": "Super. Soll ich meine Fotos von den Zählern schicken?"},
+    {"start": 76, "speaker": "them", "text": "Ja, bitte, die wären hilfreich. Per E-Mail, bis Montag, wenn möglich."},
+    {"start": 84, "speaker": "me", "text": "Mach ich, ich schicke die Fotos heute Abend noch."},
+    {"start": 92, "speaker": "them", "text": "Gut. Und ich melde mich dann bis Ende nächster Woche mit einer korrigierten Abrechnung."},
+    {"start": 105, "speaker": "me", "text": "Danke. Und wegen der Frist, ich muss ja nicht sofort zahlen?"},
+    {"start": 112, "speaker": "them", "text": "Nein, solange das geprüft wird, setzen wir die Fälligkeit aus."},
+    {"start": 122, "speaker": "me", "text": "Gut. Noch was anderes: der Aufzug war letzte Woche wieder kaputt."},
+    {"start": 130, "speaker": "them", "text": "Ja, ich weiß, wir sollten den Wartungsvertrag vielleicht wechseln, aber das entscheidet die Eigentümergemeinschaft."},
+    {"start": 143, "speaker": "me", "text": "Könnte man den Hausflur nicht mal streichen? Der sieht schlimm aus."},
+    {"start": 150, "speaker": "them", "text": "Das wäre schön, aber im Budget für dieses Jahr ist nichts mehr."},
+    {"start": 158, "speaker": "me", "text": "Okay, verstehe. Ich hab übrigens die Kautionsquittung schon letzte Woche per Post geschickt."},
+    {"start": 170, "speaker": "them", "text": "Ja, die ist angekommen, danke."},
+    {"start": 175, "speaker": "me", "text": "Dann wäre das alles. Schönen Tag noch."},
+    {"start": 180, "speaker": "them", "text": "Ihnen auch, tschüss."}
+  ],
+  "expected": {
+    "action_items": [
+      {"task": "Check the hot water meter reading with the billing company", "owner": "Frau Köhler", "segment_index": 8},
+      {"task": "Email photos of the meters by Monday, tonight", "owner": "Me", "segment_index": 11},
+      {"task": "Send a corrected statement by end of next week", "owner": "Frau Köhler", "segment_index": 12}
+    ],
+    "decisions": [
+      {"text": "Payment due date is suspended while the statement is being checked", "segment_index": 14}
+    ],
+    "non_action_traps": [
+      "Maybe change the lift maintenance contract (owners' association decides)",
+      "Painting the hallway would be nice (no budget)",
+      "Deposit receipt already sent last week (done)"
+    ]
+  }
+}
