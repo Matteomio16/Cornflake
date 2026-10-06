@@ -54,7 +54,10 @@ const Sidebar: React.FC = () => {
     isSearching,
     meetings,
     setMeetings,
-    serverAddress
+    serverAddress,
+    spaces,
+    activeSpaceId,
+    setActiveSpaceId
   } = useSidebar();
 
   // Get recording state from RecordingStateContext (single source of truth)
@@ -713,6 +716,17 @@ const Sidebar: React.FC = () => {
                     }
                   </InputGroup>
                 </div>
+                <select
+                  value={activeSpaceId ?? ''}
+                  onChange={(e) => setActiveSpaceId(e.target.value || null)}
+                  aria-label="Filter meetings by space"
+                  className="w-full mt-2 mb-1 text-sm border border-gray-200 rounded px-2 py-1 bg-white text-gray-700"
+                >
+                  <option value="">All spaces</option>
+                  {spaces.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
               </div>
             )}
           </div>

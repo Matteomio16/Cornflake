@@ -212,3 +212,7 @@
     overflow: visible !important;
   }
 }
+/* Cornflake notes: the user's own text stays dark, model-added text is grey italic */
+.cornflake-notes em {
+  color: #6b7280;
+}

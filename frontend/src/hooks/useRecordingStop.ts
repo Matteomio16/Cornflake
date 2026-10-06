@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { clearLiveNotes, readLiveNotes, saveUserNotes } from '@/lib/cornflake';
 import { useRouter } from 'next/navigation';
 import { listen } from '@tauri-apps/api/event';
 import { toast } from 'sonner';
@@ -286,6 +287,17 @@ export function useRecordingStop(
               toast.warning('Could not detect summary language', {
                 description: 'The meeting was saved, but Auto could not detect the summary language.',
               });
+            }
+          }
+
+          const liveNotes = readLiveNotes();
+          if (liveNotes.trim()) {
+            try {
+              await saveUserNotes(meetingId, liveNotes);
+              clearLiveNotes();
+            } catch (notesError) {
+              // Keep them in local storage so they are not lost; they can be pasted into the meeting later
+              console.error('Failed to save live notes:', notesError);
             }
           }
 

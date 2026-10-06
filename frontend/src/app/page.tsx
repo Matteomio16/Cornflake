@@ -1,5 +1,6 @@
 'use client';
 
+import { LiveNotesPad } from '@/components/Cornflake/LiveNotesPad';
 import { useState, useEffect } from 'react';
 import { RecordingControls } from '@/components/RecordingControls';
 import { useSidebar } from '@/components/Sidebar/SidebarProvider';
@@ -207,6 +208,7 @@ export default function Home() {
         onLoadPreview={loadMeetingTranscripts}
       />
       <div className="flex flex-1 overflow-hidden">
+        <LiveNotesPad isRecording={isRecording} />
         <TranscriptPanel
           isProcessingStop={isProcessingStop}
           isStopping={isStopping}

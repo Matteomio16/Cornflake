@@ -1,5 +1,6 @@
 'use client';
 
+import { listSpaces, Space } from '@/lib/cornflake';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Analytics from '@/lib/analytics';
@@ -19,6 +20,7 @@ interface SidebarItem {
 export interface CurrentMeeting {
   id: string;
   title: string;
+  space_id?: string | null;
 }
 
 // Search result type for transcript search
@@ -43,6 +45,9 @@ interface SidebarContextType {
   toggleCollapse: () => void;
   meetings: CurrentMeeting[];
   setMeetings: (meetings: CurrentMeeting[]) => void;
+  spaces: Space[];
+  activeSpaceId: string | null;
+  setActiveSpaceId: (id: string | null) => void;
   isMeetingActive: boolean;
   setIsMeetingActive: (active: boolean) => void;
   handleRecordingToggle: () => void;
@@ -79,6 +84,8 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [currentMeeting, setCurrentMeeting] = useState<CurrentMeeting | null>({ id: 'intro-call', title: '+ New Call' });
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [meetings, setMeetings] = useState<CurrentMeeting[]>([]);
+  const [spaces, setSpaces] = useState<Space[]>([]);
+  const [activeSpaceId, setActiveSpaceId] = useState<string | null>(null);
   const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>([]);
   const [isMeetingActive, setIsMeetingActive] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -97,11 +104,13 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const fetchMeetings = React.useCallback(async () => {
     if (serverAddress) {
       try {
-        const meetings = await invoke('api_get_meetings') as Array<{ id: string, title: string }>;
+        const meetings = await invoke('api_get_meetings') as Array<{ id: string, title: string, space_id: string | null }>;
         const transformedMeetings = meetings.map((meeting: any) => ({
           id: meeting.id,
-          title: meeting.title
+          title: meeting.title,
+          space_id: meeting.space_id ?? null,
         }));
+        setSpaces(await listSpaces());
         setMeetings(transformedMeetings);
         Analytics.trackBackendConnection(true);
       } catch (error) {
@@ -130,7 +139,9 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
       title: 'Meeting Notes',
       type: 'folder' as const,
       children: [
-        ...meetings.map(meeting => ({ id: meeting.id, title: meeting.title, type: 'file' as const }))
+        ...meetings
+          .filter(meeting => activeSpaceId === null || meeting.space_id === activeSpaceId)
+          .map(meeting => ({ id: meeting.id, title: meeting.title, type: 'file' as const }))
       ]
     },
   ];
@@ -151,7 +162,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   // Update sidebar items when meetings change
   useEffect(() => {
     setSidebarItems(baseItems);
-  }, [meetings]);
+  }, [meetings, activeSpaceId]);
 
   // Function to handle recording toggle from sidebar
   const handleRecordingToggle = () => {
@@ -316,6 +327,9 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
       startSummaryPolling,
       stopSummaryPolling,
       refetchMeetings: fetchMeetings,
+      spaces,
+      activeSpaceId,
+      setActiveSpaceId,
 
     }}>
       {children}
