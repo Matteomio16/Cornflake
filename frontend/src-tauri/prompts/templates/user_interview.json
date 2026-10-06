@@ -1,0 +1,27 @@
+{
+  "id": "user_interview",
+  "name": "User interview",
+  "description": "Customer discovery or usability interview.",
+  "sections": [
+    {
+      "heading": "Participant",
+      "guidance": "Role, company, context, without personal data beyond what was said"
+    },
+    {
+      "heading": "Current workflow",
+      "guidance": "How they do the job today"
+    },
+    {
+      "heading": "Pain points",
+      "guidance": "Problems in their words, with quotes when short"
+    },
+    {
+      "heading": "Reactions",
+      "guidance": "What they said about the product or idea"
+    },
+    {
+      "heading": "Insights",
+      "guidance": "Patterns worth remembering, clearly separated from what was said"
+    }
+  ]
+}

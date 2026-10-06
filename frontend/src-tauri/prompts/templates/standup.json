@@ -1,0 +1,19 @@
+{
+  "id": "standup",
+  "name": "Standup",
+  "description": "Daily or weekly team standup.",
+  "sections": [
+    {
+      "heading": "Done",
+      "guidance": "What each person finished"
+    },
+    {
+      "heading": "Doing",
+      "guidance": "What each person is working on next"
+    },
+    {
+      "heading": "Blockers",
+      "guidance": "What is blocking anyone"
+    }
+  ]
+}

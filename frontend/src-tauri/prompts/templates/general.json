@@ -1,0 +1,15 @@
+{
+  "id": "general",
+  "name": "General meeting",
+  "description": "Any meeting without a more specific template.",
+  "sections": [
+    {
+      "heading": "Discussion",
+      "guidance": "Main topics, in the order they came up"
+    },
+    {
+      "heading": "Next steps",
+      "guidance": "What happens after this meeting, beyond the action items"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "sales_call",
+  "name": "Sales call",
+  "description": "Call with a prospect or customer.",
+  "sections": [
+    {
+      "heading": "Customer context",
+      "guidance": "Who they are, their situation and current tools"
+    },
+    {
+      "heading": "Pain points",
+      "guidance": "Problems in their words"
+    },
+    {
+      "heading": "Requirements",
+      "guidance": "What a solution must do, budget, timeline, decision process"
+    },
+    {
+      "heading": "Objections",
+      "guidance": "Concerns raised and how they were answered"
+    },
+    {
+      "heading": "Next steps",
+      "guidance": "Agreed follow-up in the sales process"
+    }
+  ]
+}

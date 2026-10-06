@@ -1,0 +1,27 @@
+{
+  "id": "investor_meeting",
+  "name": "Investor meeting",
+  "description": "Founder pitch, VC partner meeting, LP or portfolio check-in.",
+  "sections": [
+    {
+      "heading": "Company",
+      "guidance": "What the company does, stage, team"
+    },
+    {
+      "heading": "Traction and metrics",
+      "guidance": "Numbers mentioned: revenue, growth, users, burn, runway, round size, valuation"
+    },
+    {
+      "heading": "Market and competition",
+      "guidance": "Market size, competitors, differentiation"
+    },
+    {
+      "heading": "Concerns and risks",
+      "guidance": "Doubts raised and open diligence questions"
+    },
+    {
+      "heading": "Deal and process",
+      "guidance": "Terms, timing, next steps in the process"
+    }
+  ]
+}

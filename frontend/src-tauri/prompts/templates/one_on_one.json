@@ -1,0 +1,23 @@
+{
+  "id": "one_on_one",
+  "name": "1:1",
+  "description": "Manager, report, mentor or peer one-on-one.",
+  "sections": [
+    {
+      "heading": "Updates",
+      "guidance": "What each side reported since last time"
+    },
+    {
+      "heading": "Feedback",
+      "guidance": "Feedback given or received, both directions"
+    },
+    {
+      "heading": "Blockers and support",
+      "guidance": "What is in the way and what help was asked for"
+    },
+    {
+      "heading": "Growth",
+      "guidance": "Goals, career, development topics"
+    }
+  ]
+}
