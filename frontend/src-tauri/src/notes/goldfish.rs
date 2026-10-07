@@ -29,9 +29,10 @@ pub fn endpoint() -> Result<Endpoint, String> {
 }
 
 pub fn staging_dir(meeting_id: &str) -> PathBuf {
-    dirs::data_local_dir()
+    // Under the app data folder, never the install folder (%LOCALAPPDATA%\Cornflake), which the uninstaller owns
+    dirs::data_dir()
         .unwrap_or_default()
-        .join("Cornflake")
+        .join("app.cornflake")
         .join("goldfish-staging")
         .join(meeting_id.chars().filter(|c| c.is_alphanumeric() || *c == '-').collect::<String>())
 }
