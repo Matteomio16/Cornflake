@@ -26,18 +26,23 @@ pub async fn resolve_llm_config(pool: &SqlitePool) -> Result<LlmConfig, String> 
                 .await
                 .map_err(db_err)?
                 .ok_or("No OpenRouter key saved. Add it in Settings.")?;
-            Ok(LlmConfig { base_url: OPENROUTER_BASE_URL.into(), api_key, model: setting.model })
+            Ok(LlmConfig { base_url: OPENROUTER_BASE_URL.into(), api_key, model: setting.model, disable_reasoning: true })
         }
         "custom-openai" => {
             let c = SettingsRepository::get_custom_openai_config(pool)
                 .await
                 .map_err(db_err)?
                 .ok_or("Custom endpoint is not configured.")?;
-            Ok(LlmConfig { base_url: c.endpoint, api_key: c.api_key.unwrap_or_default(), model: c.model })
+            Ok(LlmConfig { base_url: c.endpoint, api_key: c.api_key.unwrap_or_default(), model: c.model, disable_reasoning: false })
         }
         "ollama" => {
             let host = setting.ollama_endpoint.unwrap_or_else(|| "http://localhost:11434".into());
-            Ok(LlmConfig { base_url: format!("{}/v1", host.trim_end_matches('/')), api_key: "ollama".into(), model: setting.model })
+            Ok(LlmConfig {
+                base_url: format!("{}/v1", host.trim_end_matches('/')),
+                api_key: "ollama".into(),
+                model: setting.model,
+                disable_reasoning: false,
+            })
         }
         other => Err(format!(
             "Provider '{other}' is not supported for notes. Choose OpenRouter, a custom OpenAI-compatible endpoint or Ollama in Settings."
@@ -384,4 +389,90 @@ pub async fn webhooks_set(state: tauri::State<'_, AppState>, urls: String) -> Re
         .await
         .map_err(db_err)?;
     Ok(valid.len())
+}
+
+pub const TRANSLATION_MODEL_KEY: &str = "translation_model";
+
+/// Translation uses the notes provider with its own model setting (defaults to the notes model).
+async fn translation_config(pool: &SqlitePool) -> Result<LlmConfig, String> {
+    let mut cfg = resolve_llm_config(pool).await?;
+    if let Some(m) = super::export::get_setting(pool, TRANSLATION_MODEL_KEY).await.map_err(db_err)?.filter(|m| !m.trim().is_empty()) {
+        cfg.model = m;
+    }
+    Ok(cfg)
+}
+
+#[derive(Serialize)]
+pub struct TranslatedLines {
+    pub lines: Vec<Option<String>>,
+    pub cost_usd: Option<f64>,
+    pub model: String,
+}
+
+/// Translates arbitrary transcript lines; the live view calls this for new segments while recording.
+#[tauri::command]
+pub async fn translate_texts(state: tauri::State<'_, AppState>, texts: Vec<String>, target: String) -> Result<TranslatedLines, String> {
+    let cfg = translation_config(state.db_manager.pool()).await?;
+    let t = super::translate::translate(&cfg, &texts, &target).await?;
+    Ok(TranslatedLines { lines: t.lines, cost_usd: t.cost_usd, model: cfg.model })
+}
+
+/// Translates a saved meeting's transcript once per language and caches it.
+#[tauri::command]
+pub async fn translate_meeting(
+    state: tauri::State<'_, AppState>,
+    meeting_id: String,
+    target: String,
+    refresh: Option<bool>,
+) -> Result<TranslatedLines, String> {
+    let pool = state.db_manager.pool();
+    if !refresh.unwrap_or(false) {
+        let cached: Option<(String, String, Option<f64>)> =
+            sqlx::query_as("SELECT lines_json, model, cost_usd FROM meeting_translations WHERE meeting_id = ? AND target = ?")
+                .bind(&meeting_id)
+                .bind(&target)
+                .fetch_optional(pool)
+                .await
+                .map_err(db_err)?;
+        if let Some((json, model, cost)) = cached {
+            return Ok(TranslatedLines { lines: serde_json::from_str(&json).unwrap_or_default(), cost_usd: cost, model });
+        }
+    }
+    let texts: Vec<String> = store::meeting_segments(pool, &meeting_id).await.map_err(db_err)?.into_iter().map(|s| s.text).collect();
+    if texts.is_empty() {
+        return Err("This meeting has no transcript yet.".into());
+    }
+    let cfg = translation_config(pool).await?;
+    let t = super::translate::translate(&cfg, &texts, &target).await?;
+    sqlx::query(
+        "INSERT INTO meeting_translations (meeting_id, target, lines_json, model, cost_usd, created_at) VALUES (?, ?, ?, ?, ?, ?) \
+         ON CONFLICT(meeting_id, target) DO UPDATE SET lines_json = excluded.lines_json, model = excluded.model, \
+         cost_usd = excluded.cost_usd, created_at = excluded.created_at",
+    )
+    .bind(&meeting_id)
+    .bind(&target)
+    .bind(serde_json::to_string(&t.lines).unwrap_or_default())
+    .bind(&cfg.model)
+    .bind(t.cost_usd)
+    .bind(chrono::Utc::now().to_rfc3339())
+    .execute(pool)
+    .await
+    .map_err(db_err)?;
+    Ok(TranslatedLines { lines: t.lines, cost_usd: t.cost_usd, model: cfg.model })
+}
+
+#[tauri::command]
+pub async fn setting_get(state: tauri::State<'_, AppState>, key: String) -> Result<Option<String>, String> {
+    if !["translation_model", "translation_target"].contains(&key.as_str()) {
+        return Err(format!("unknown setting '{key}'"));
+    }
+    super::export::get_setting(state.db_manager.pool(), &key).await.map_err(db_err)
+}
+
+#[tauri::command]
+pub async fn setting_set(state: tauri::State<'_, AppState>, key: String, value: String) -> Result<(), String> {
+    if !["translation_model", "translation_target"].contains(&key.as_str()) {
+        return Err(format!("unknown setting '{key}'"));
+    }
+    super::export::set_setting(state.db_manager.pool(), &key, value.trim()).await.map_err(db_err)
 }

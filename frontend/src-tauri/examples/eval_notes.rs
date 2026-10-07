@@ -76,6 +76,7 @@ struct CaseScore {
     matched_decisions: usize,
     dropped_by_validation: usize,
     minutes: f64,
+    seconds: f64,
     cost_usd: f64,
 }
 
@@ -101,7 +102,9 @@ async fn main() {
             std::process::exit(2);
         }
     };
-    let cfg = LlmConfig { base_url: OPENROUTER_BASE_URL.into(), api_key, model: model.clone() };
+    // Third argument "reasoning" keeps the model's hidden reasoning on, for comparison runs
+    let reasoning = args.get(3).map_or(false, |a| a == "reasoning");
+    let cfg = LlmConfig { base_url: OPENROUTER_BASE_URL.into(), api_key, model: model.clone(), disable_reasoning: !reasoning };
 
     let cases_dir = repo_root().join("eval").join("cases");
     let mut paths: Vec<_> = std::fs::read_dir(&cases_dir)
@@ -130,7 +133,10 @@ async fn main() {
             minutes,
             ..Default::default()
         };
-        match merge::generate(&cfg, &case.segments, &case.user_notes, &case.template, None).await {
+        let started = std::time::Instant::now();
+        let generated = merge::generate(&cfg, &case.segments, &case.user_notes, &case.template, None).await;
+        sc.seconds = started.elapsed().as_secs_f64();
+        match generated {
             Ok(res) => {
                 sc.ok = true;
                 let projects = eval_projects();
@@ -206,12 +212,16 @@ async fn main() {
     let dropped: usize = scores.iter().map(|s| s.dropped_by_validation).sum();
     let minutes: f64 = scores.iter().filter(|s| s.ok).map(|s| s.minutes).sum();
     let cost: f64 = scores.iter().map(|s| s.cost_usd).sum();
+    let mut secs: Vec<f64> = scores.iter().filter(|s| s.ok).map(|s| s.seconds).collect();
+    secs.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    let median_secs = secs.get(secs.len() / 2).copied().unwrap_or(0.0);
+    let max_secs = secs.last().copied().unwrap_or(0.0);
     let routed_ok = scores.iter().filter(|s| s.ok && s.routed_project.as_deref() == Some(s.expected_project.as_str())).count();
     let routed_none = scores.iter().filter(|s| s.ok && s.routed_project.is_none()).count();
     let pct = |a: usize, b: usize| if b == 0 { 100.0 } else { 100.0 * a as f64 / b as f64 };
 
     let mut md = format!(
-        "# Notes eval\n\nModel `{model}`, prompts `{}`, {} cases.\n\n\
+        "# Notes eval\n\nModel `{model}` (reasoning {}), prompts `{}`, {} cases.\n\n\
          | Metric | Value |\n|---|---|\n\
          | Valid notes produced | {ok}/{} ({:.0}%) |\n\
          | Valid JSON on first try | {first}/{} ({:.0}%) |\n\
@@ -222,9 +232,11 @@ async fn main() {
          | Items removed by validation for missing evidence | {dropped} |\n\
          | Expected decisions found | {matched_d}/{exp_d} ({:.0}%) |\n\
          | Routing accuracy (correct project) | {routed_ok}/{ok} ({:.0}%), {routed_none} left unrouted |\n\
+         | Notes generation time, median / max | {median_secs:.0}s / {max_secs:.0}s |\n\
          | Total cost | ${cost:.4} |\n\
          | Cost per meeting-hour | ${:.4} |\n\n\
          | Case | Lang | OK | Actions found/expected | Unsupported | Traps | Routed (expected) | Cost |\n|---|---|---|---|---|---|---|---|\n",
+        if reasoning { "on" } else { "off" },
         app_lib::notes::prompts::PROMPT_VERSION,
         scores.len(),
         scores.len(), pct(ok, scores.len()),

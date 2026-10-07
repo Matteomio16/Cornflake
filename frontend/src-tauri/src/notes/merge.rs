@@ -300,7 +300,7 @@ pub fn render_markdown(doc: &NotesDoc, segments: &[Segment]) -> String {
             let due = a.due.as_deref().map(|d| format!(", due {d}")).unwrap_or_default();
             md.push_str(&format!(
                 "- [ ] **{owner}**: {}{due}{}\n",
-                a.task.trim(),
+                a.task.trim().trim_end_matches('.'),
                 cite(&a.evidence, segments)
             ));
         }

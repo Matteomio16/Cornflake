@@ -9,3 +9,4 @@ pub mod merge;
 pub mod prompts;
 pub mod routing;
 pub mod store;
+pub mod translate;

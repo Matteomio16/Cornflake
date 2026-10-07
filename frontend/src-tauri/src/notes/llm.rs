@@ -11,6 +11,8 @@ pub struct LlmConfig {
     pub base_url: String,
     pub api_key: String,
     pub model: String,
+    /// OpenRouter only: ask the model to skip hidden reasoning, which makes flash models several times faster.
+    pub disable_reasoning: bool,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -76,7 +78,7 @@ pub async fn chat(
     temperature: f32,
 ) -> Result<LlmResult, LlmError> {
     let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(180))
+        .timeout(Duration::from_secs(600))
         .build()
         .map_err(|e| LlmError::Network(e.to_string()))?;
     let mut body = json!({
@@ -90,6 +92,9 @@ pub async fn chat(
     });
     if json_mode {
         body["response_format"] = json!({"type": "json_object"});
+    }
+    if cfg.disable_reasoning {
+        body["reasoning"] = json!({"enabled": false});
     }
     let url = format!("{}/chat/completions", cfg.base_url.trim_end_matches('/'));
 
