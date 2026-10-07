@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { readLiveNotes, writeLiveNotes } from '@/lib/cornflake';
+import { ConsentMessage } from './ConsentMessage';
 
 export function LiveNotesPad({ isRecording }: { isRecording: boolean }) {
   const [notes, setNotes] = useState('');
@@ -12,9 +13,14 @@ export function LiveNotesPad({ isRecording }: { isRecording: boolean }) {
 
   return (
     <section className="flex flex-col w-2/5 min-w-[280px] border-r border-gray-200 bg-white">
-      <header className="flex items-baseline justify-between px-5 pt-4 pb-2">
-        <h2 className="text-sm font-semibold text-gray-900">My notes</h2>
-        <span className="text-xs text-gray-500">Kept exactly as you type them</span>
+      <header className="px-5 pt-4 pb-2">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-sm font-semibold text-gray-900">My notes</h2>
+          <span className="text-xs text-gray-500">Kept exactly as you type them</span>
+        </div>
+        <div className="mt-1">
+          <ConsentMessage />
+        </div>
       </header>
       <textarea
         value={notes}
