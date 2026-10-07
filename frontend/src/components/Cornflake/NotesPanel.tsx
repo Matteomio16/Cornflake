@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { RoutingCard } from './RoutingCard';
 import remarkGfm from 'remark-gfm';
 import { toast } from 'sonner';
 import {
@@ -207,6 +208,7 @@ export function NotesPanel({
             <div className="cornflake-notes prose prose-sm max-w-none">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{current.markdown}</ReactMarkdown>
             </div>
+            <RoutingCard meetingId={meetingId} />
             <p className="mt-6 text-xs text-gray-500">
               Plain text is yours. Grey italic text was added from the transcript, with timestamps.
             </p>

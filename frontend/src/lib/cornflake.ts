@@ -95,3 +95,28 @@ export const exportMeetingMarkdown = (meetingId: string) =>
   invoke<{ notes_path: string; transcript_path: string }>('export_meeting_markdown', { meetingId });
 export const getExportDir = () => invoke<string>('export_get_dir');
 export const setExportDir = (dir: string) => invoke<void>('export_set_dir', { dir });
+
+export interface RoutingProject {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface MemoryPreview {
+  memory_dir: string;
+  file_name: string;
+  content: string;
+  index_line: string;
+  replaces_existing: boolean;
+}
+
+export interface RoutingSuggestion {
+  decision: { project: string | null; confidence: number; reason: string; source: string; cost_usd: number | null };
+  preview: MemoryPreview | null;
+}
+
+export const getRoutingProjects = () => invoke<RoutingProject[]>('routing_projects_get');
+export const saveRoutingProjects = (projects: RoutingProject[]) => invoke<void>('routing_projects_save', { projects });
+export const suggestRouting = (meetingId: string) => invoke<RoutingSuggestion>('routing_suggest', { meetingId });
+export const writeRouting = (meetingId: string, projectId: string) =>
+  invoke<string>('routing_write', { meetingId, projectId });

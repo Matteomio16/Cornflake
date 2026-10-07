@@ -1,6 +1,7 @@
 "use client"
 
 import { ExportSettings } from '@/components/Cornflake/ExportSettings';
+import { RoutingSettings } from '@/components/Cornflake/RoutingSettings';
 import { useEffect, useState, useRef } from "react"
 import { Switch } from "./ui/switch"
 import { FolderOpen } from "lucide-react"
@@ -160,6 +161,8 @@ export function PreferenceSettings() {
       </div>
 
       <ExportSettings />
+
+      <RoutingSettings />
 
       {/* Data Storage Locations Section */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">

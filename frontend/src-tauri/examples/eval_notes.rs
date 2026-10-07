@@ -8,6 +8,20 @@ use app_lib::notes::llm::{LlmConfig, OPENROUTER_BASE_URL};
 use app_lib::notes::merge::{self, Segment};
 use serde::Deserialize;
 use std::path::PathBuf;
+use app_lib::notes::routing::{self, RoutingProject};
+
+/// The fictional projects the eval cases are labelled with. Descriptions are what a user would type.
+fn eval_projects() -> Vec<RoutingProject> {
+    let p = |id: &str, name: &str, d: &str| RoutingProject { id: id.into(), name: name.into(), description: d.into() };
+    vec![
+        p("atlas-fund", "Atlas Fund", "My seed VC fund: deal flow, founder pitches, partner meetings, LP updates, fund operations."),
+        p("nordlicht", "Nordlicht", "Portfolio company where I sit on the board: B2B energy-management SaaS in Berlin."),
+        p("ferrovia", "Ferrovia", "Portfolio company: rail freight logistics marketplace based in Milan."),
+        p("cornflake-app", "Cornflake", "My side project: a local meeting-notes desktop app."),
+        p("papillon-studio", "Papillon Studio", "Design studio I co-founded in Paris: client work, hiring, pricing, studio operations."),
+        p("personal", "Personal", "Personal admin: health, apartment, family logistics, private errands."),
+    ]
+}
 
 #[cfg(windows)]
 #[link(name = "advapi32")]
@@ -37,6 +51,7 @@ struct Case {
     id: String,
     language: String,
     template: String,
+    project: String,
     user_notes: String,
     segments: Vec<Segment>,
     expected: Expected,
@@ -49,6 +64,8 @@ struct CaseScore {
     ok: bool,
     error: Option<String>,
     first_try_json: bool,
+    expected_project: String,
+    routed_project: Option<String>,
     notes_kept: bool,
     expected_actions: usize,
     found_actions: usize,
@@ -107,6 +124,7 @@ async fn main() {
         let mut sc = CaseScore {
             id: case.id.clone(),
             language: case.language.clone(),
+            expected_project: case.project.clone(),
             expected_actions: case.expected.action_items.len(),
             expected_decisions: case.expected.decisions.len(),
             minutes,
@@ -115,10 +133,18 @@ async fn main() {
         match merge::generate(&cfg, &case.segments, &case.user_notes, &case.template, None).await {
             Ok(res) => {
                 sc.ok = true;
+                let projects = eval_projects();
+                match routing::decide(&cfg, &projects, &res.doc.title, None, None, &res.doc).await {
+                    Ok(d) => {
+                        sc.routed_project = d.project;
+                        sc.cost_usd += d.cost_usd.unwrap_or(0.0);
+                    }
+                    Err(e) => eprintln!("{}: routing failed: {e}", case.id),
+                }
                 sc.first_try_json = res.attempts == 1;
                 sc.notes_kept = res.repairs.notes_missing_added == 0 && res.repairs.notes_duplicated_removed == 0;
                 sc.dropped_by_validation = res.repairs.items_dropped_without_evidence;
-                sc.cost_usd = res.cost_usd.unwrap_or(0.0);
+                sc.cost_usd += res.cost_usd.unwrap_or(0.0);
                 spent += sc.cost_usd;
                 sc.found_actions = res.doc.action_items.len();
                 for a in &res.doc.action_items {
@@ -180,6 +206,8 @@ async fn main() {
     let dropped: usize = scores.iter().map(|s| s.dropped_by_validation).sum();
     let minutes: f64 = scores.iter().filter(|s| s.ok).map(|s| s.minutes).sum();
     let cost: f64 = scores.iter().map(|s| s.cost_usd).sum();
+    let routed_ok = scores.iter().filter(|s| s.ok && s.routed_project.as_deref() == Some(s.expected_project.as_str())).count();
+    let routed_none = scores.iter().filter(|s| s.ok && s.routed_project.is_none()).count();
     let pct = |a: usize, b: usize| if b == 0 { 100.0 } else { 100.0 * a as f64 / b as f64 };
 
     let mut md = format!(
@@ -193,9 +221,10 @@ async fn main() {
          | Output action items matching a known non-action trap | {traps} |\n\
          | Items removed by validation for missing evidence | {dropped} |\n\
          | Expected decisions found | {matched_d}/{exp_d} ({:.0}%) |\n\
+         | Routing accuracy (correct project) | {routed_ok}/{ok} ({:.0}%), {routed_none} left unrouted |\n\
          | Total cost | ${cost:.4} |\n\
          | Cost per meeting-hour | ${:.4} |\n\n\
-         | Case | Lang | OK | Actions found/expected | Unsupported | Traps | Cost |\n|---|---|---|---|---|---|---|\n",
+         | Case | Lang | OK | Actions found/expected | Unsupported | Traps | Routed (expected) | Cost |\n|---|---|---|---|---|---|---|---|\n",
         app_lib::notes::prompts::PROMPT_VERSION,
         scores.len(),
         scores.len(), pct(ok, scores.len()),
@@ -204,13 +233,15 @@ async fn main() {
         pct(matched, exp),
         pct(unsupported, found),
         pct(matched_d, exp_d),
+        pct(routed_ok, ok),
         if minutes > 0.0 { cost / (minutes / 60.0) } else { 0.0 },
     );
     for s in &scores {
         md.push_str(&format!(
-            "| {} | {} | {} | {}/{} | {} | {} | ${:.5} |\n",
+            "| {} | {} | {} | {}/{} | {} | {} | {} ({}) | ${:.5} |\n",
             s.id, s.language, if s.ok { "yes" } else { s.error.as_deref().unwrap_or("no") },
-            s.matched_actions, s.expected_actions, s.unsupported_actions, s.trap_hits, s.cost_usd
+            s.matched_actions, s.expected_actions, s.unsupported_actions, s.trap_hits,
+            s.routed_project.as_deref().unwrap_or("none"), s.expected_project, s.cost_usd
         ));
     }
     md.push_str(
