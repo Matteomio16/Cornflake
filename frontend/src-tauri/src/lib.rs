@@ -460,6 +460,23 @@ pub fn run() {
 
             tray::focus_main_window(app);
         }));
+
+        // Ctrl+Alt+R starts or stops a recording from anywhere, same as the tray menu
+        use tauri_plugin_global_shortcut::ShortcutState;
+        match tauri_plugin_global_shortcut::Builder::new().with_shortcuts(["ctrl+alt+r"]) {
+            Ok(shortcuts) => {
+                builder = builder.plugin(
+                    shortcuts
+                        .with_handler(|app, _shortcut, event| {
+                            if event.state == ShortcutState::Pressed {
+                                tray::toggle_recording_handler(app);
+                            }
+                        })
+                        .build(),
+                );
+            }
+            Err(e) => log::warn!("Global shortcut Ctrl+Alt+R unavailable: {e}"),
+        }
     }
 
     builder
