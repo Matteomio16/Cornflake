@@ -7,6 +7,7 @@ pub const PROMPT_VERSION: &str = "notes-v3";
 pub const NOTES_MERGE_SYSTEM: &str = include_str!("../../prompts/notes_merge.system.md");
 pub const ROUTING_SYSTEM: &str = include_str!("../../prompts/routing.system.md");
 pub const TRANSLATE_SYSTEM: &str = include_str!("../../prompts/translate.system.md");
+pub const VOCAB_FIX_SYSTEM: &str = include_str!("../../prompts/vocab_fix.system.md");
 
 const TEMPLATE_FILES: &[&str] = &[
     include_str!("../../prompts/templates/general.json"),

@@ -53,6 +53,8 @@ pub async fn resolve_llm_config(pool: &SqlitePool) -> Result<LlmConfig, String> 
 #[derive(Serialize)]
 pub struct GeneratedNotes {
     pub version_id: String,
+    /// Misheard names fixed from the vocabulary before the notes were written.
+    pub names_corrected: usize,
     pub template: String,
     pub markdown: String,
     pub model: String,
@@ -164,18 +166,20 @@ pub async fn notes_generate(
             .map(|s| s.default_template)
             .unwrap_or_else(|| "general".into()),
     };
-    let segments = store::meeting_segments(pool, &meeting_id).await.map_err(db_err)?;
+    let mut segments = store::meeting_segments(pool, &meeting_id).await.map_err(db_err)?;
     if segments.is_empty() {
         return Err("This meeting has no transcript yet.".into());
     }
     let notes = store::user_notes(pool, &meeting_id).await.map_err(db_err)?;
     let cfg = resolve_llm_config(pool).await?;
+    let corrections = correct_names(pool, &cfg, &meeting_id, &mut segments).await;
     let res = match merge::generate(&cfg, &segments, &notes, &template, output_language.as_deref()).await {
         Ok(r) => r,
         Err(NotesError::Llm(super::llm::LlmError::PaymentRequired(msg))) => {
             return Ok(GeneratedNotes {
                 version_id: String::new(),
                 template,
+                names_corrected: 0,
                 markdown: format!("Out of credit with your AI provider: {msg}"),
                 model: cfg.model,
                 cost_usd: None,
@@ -223,6 +227,7 @@ pub async fn notes_generate(
     Ok(GeneratedNotes {
         version_id,
         template,
+        names_corrected: corrections,
         markdown: res.markdown,
         model: res.model,
         cost_usd: res.cost_usd,
@@ -495,4 +500,119 @@ pub fn mcp_register_claude_code(app: tauri::AppHandle) -> Result<String, String>
 #[tauri::command]
 pub fn mcp_register_claude_desktop(app: tauri::AppHandle) -> Result<String, String> {
     super::mcp_setup::register_desktop(&super::mcp_setup::mcp_exe(&app), &super::mcp_setup::desktop_config_path())
+}
+
+// The feed is fetched at most every few minutes; Home asks for upcoming events on every visit
+static ICS_CACHE: std::sync::Mutex<Option<(std::time::Instant, String)>> = std::sync::Mutex::new(None);
+
+async fn calendar_feed(force: bool) -> Result<Option<String>, String> {
+    let Some(url) = crate::secrets::get(super::calendar::ICS_SECRET)? else { return Ok(None) };
+    if !force {
+        if let Some((at, body)) = ICS_CACHE.lock().unwrap().as_ref() {
+            if at.elapsed() < std::time::Duration::from_secs(300) {
+                return Ok(Some(body.clone()));
+            }
+        }
+    }
+    let body = super::calendar::fetch(&url).await?;
+    *ICS_CACHE.lock().unwrap() = Some((std::time::Instant::now(), body.clone()));
+    Ok(Some(body))
+}
+
+/// Saves the private iCal address after checking it really returns a calendar.
+#[tauri::command]
+pub async fn calendar_set_url(url: String) -> Result<usize, String> {
+    let body = super::calendar::fetch(&url).await?;
+    let now = chrono::Utc::now();
+    let count = super::calendar::events_between(&body, now, now + chrono::Duration::days(14)).len();
+    crate::secrets::set(super::calendar::ICS_SECRET, url.trim())?;
+    *ICS_CACHE.lock().unwrap() = Some((std::time::Instant::now(), body));
+    Ok(count)
+}
+
+#[tauri::command]
+pub fn calendar_clear() -> Result<(), String> {
+    *ICS_CACHE.lock().unwrap() = None;
+    crate::secrets::delete(super::calendar::ICS_SECRET)
+}
+
+#[tauri::command]
+pub fn calendar_is_connected() -> Result<bool, String> {
+    Ok(crate::secrets::get(super::calendar::ICS_SECRET)?.is_some())
+}
+
+/// Meetings that have not ended yet, soonest first (Granola's "Coming up").
+#[tauri::command]
+pub async fn calendar_upcoming(limit: Option<usize>, refresh: Option<bool>) -> Result<Vec<super::calendar::CalendarEvent>, String> {
+    let Some(body) = calendar_feed(refresh.unwrap_or(false)).await? else { return Ok(vec![]) };
+    let now = chrono::Utc::now();
+    let mut events = super::calendar::events_between(&body, now, now + chrono::Duration::days(14));
+    events.truncate(limit.unwrap_or(5));
+    Ok(events)
+}
+
+/// The user's vocabulary plus this meeting's attendees and space name.
+async fn glossary(pool: &SqlitePool, meeting_id: &str) -> Vec<String> {
+    let mut text = super::export::get_setting(pool, super::vocabulary::VOCABULARY_KEY).await.ok().flatten().unwrap_or_default();
+    for a in store::meeting_attendees(pool, meeting_id).await.unwrap_or_default() {
+        text.push('\n');
+        text.push_str(&a);
+    }
+    super::vocabulary::parse_vocabulary(&text)
+}
+
+/// Vocabulary correction before the notes pass. Failures never block notes: they leave the transcript as heard.
+async fn correct_names(pool: &SqlitePool, cfg: &LlmConfig, meeting_id: &str, segments: &mut [merge::Segment]) -> usize {
+    let terms = glossary(pool, meeting_id).await;
+    if terms.is_empty() {
+        return 0;
+    }
+    let lines: Vec<String> = segments.iter().map(|s| s.text.clone()).collect();
+    let ids = match store::meeting_segment_ids(pool, meeting_id).await {
+        Ok(ids) if ids.len() == lines.len() => ids,
+        _ => return 0,
+    };
+    match super::vocabulary::correct(cfg, &lines, &terms).await {
+        Ok(c) => {
+            for fix in &c.applied {
+                if store::correct_transcript_line(pool, &ids[fix.index], &c.lines[fix.index]).await.is_ok() {
+                    segments[fix.index].text = c.lines[fix.index].clone();
+                }
+            }
+            log::info!("vocabulary correction: {} applied, {} rejected", c.applied.len(), c.rejected);
+            c.applied.len()
+        }
+        Err(e) => {
+            log::warn!("vocabulary correction skipped: {e}");
+            0
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn vocabulary_get(state: tauri::State<'_, AppState>) -> Result<String, String> {
+    Ok(super::export::get_setting(state.db_manager.pool(), super::vocabulary::VOCABULARY_KEY).await.map_err(db_err)?.unwrap_or_default())
+}
+
+#[tauri::command]
+pub async fn vocabulary_set(state: tauri::State<'_, AppState>, text: String) -> Result<usize, String> {
+    let terms = super::vocabulary::parse_vocabulary(&text);
+    super::export::set_setting(state.db_manager.pool(), super::vocabulary::VOCABULARY_KEY, &terms.join("\n")).await.map_err(db_err)?;
+    Ok(terms.len())
+}
+
+#[tauri::command]
+pub async fn meeting_set_attendees(state: tauri::State<'_, AppState>, meeting_id: String, attendees: Vec<String>) -> Result<(), String> {
+    store::set_meeting_attendees(state.db_manager.pool(), &meeting_id, &attendees).await.map_err(db_err)
+}
+
+#[tauri::command]
+pub async fn meeting_get_attendees(state: tauri::State<'_, AppState>, meeting_id: String) -> Result<Vec<String>, String> {
+    store::meeting_attendees(state.db_manager.pool(), &meeting_id).await.map_err(db_err)
+}
+
+/// Puts every corrected line back to what speech recognition heard.
+#[tauri::command]
+pub async fn transcript_revert_corrections(state: tauri::State<'_, AppState>, meeting_id: String) -> Result<u64, String> {
+    store::revert_corrections(state.db_manager.pool(), &meeting_id).await.map_err(db_err)
 }

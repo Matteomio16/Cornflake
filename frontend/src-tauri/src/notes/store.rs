@@ -163,6 +163,56 @@ pub async fn notes_versions(pool: &SqlitePool, meeting_id: &str) -> sqlx::Result
     .await
 }
 
+pub async fn meeting_attendees(pool: &SqlitePool, meeting_id: &str) -> sqlx::Result<Vec<String>> {
+    let raw: Option<Option<String>> = sqlx::query_scalar("SELECT attendees FROM meetings WHERE id = ?")
+        .bind(meeting_id)
+        .fetch_optional(pool)
+        .await?;
+    Ok(raw.flatten().and_then(|j| serde_json::from_str(&j).ok()).unwrap_or_default())
+}
+
+pub async fn set_meeting_attendees(pool: &SqlitePool, meeting_id: &str, attendees: &[String]) -> sqlx::Result<()> {
+    sqlx::query("UPDATE meetings SET attendees = ? WHERE id = ?")
+        .bind(serde_json::to_string(attendees).unwrap_or_default())
+        .bind(meeting_id)
+        .execute(pool)
+        .await?;
+    Ok(())
+}
+
+/// Transcript row ids in the same order as `meeting_segments`.
+pub async fn meeting_segment_ids(pool: &SqlitePool, meeting_id: &str) -> sqlx::Result<Vec<String>> {
+    sqlx::query_scalar(
+        "SELECT id FROM transcripts WHERE meeting_id = ? ORDER BY COALESCE(audio_start_time, 0), timestamp",
+    )
+    .bind(meeting_id)
+    .fetch_all(pool)
+    .await
+}
+
+/// Stores a corrected line, keeping the first heard version for revert.
+pub async fn correct_transcript_line(pool: &SqlitePool, transcript_id: &str, text: &str) -> sqlx::Result<()> {
+    sqlx::query(
+        "UPDATE transcripts SET transcript_original = COALESCE(transcript_original, transcript), transcript = ? WHERE id = ?",
+    )
+    .bind(text)
+    .bind(transcript_id)
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+pub async fn revert_corrections(pool: &SqlitePool, meeting_id: &str) -> sqlx::Result<u64> {
+    let r = sqlx::query(
+        "UPDATE transcripts SET transcript = transcript_original, transcript_original = NULL \
+         WHERE meeting_id = ? AND transcript_original IS NOT NULL",
+    )
+    .bind(meeting_id)
+    .execute(pool)
+    .await?;
+    Ok(r.rows_affected())
+}
+
 #[cfg(test)]
 pub(crate) async fn test_pool() -> SqlitePool {
     let pool = sqlx::sqlite::SqlitePoolOptions::new()

@@ -17,9 +17,16 @@ fn read_wav(name: &str) -> Vec<f32> {
 }
 
 fn transcribe(ctx: &WhisperContext, audio: &[f32]) -> String {
+    transcribe_with(ctx, audio, Some("en"), None)
+}
+
+fn transcribe_with(ctx: &WhisperContext, audio: &[f32], language: Option<&str>, prompt: Option<&str>) -> String {
     let mut state = ctx.create_state().unwrap();
     let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
-    params.set_language(Some("en"));
+    params.set_language(language);
+    if let Some(p) = prompt {
+        params.set_initial_prompt(p);
+    }
     params.set_print_progress(false);
     params.set_print_realtime(false);
     if let Ok(n) = std::env::var("OC_THREADS") {
@@ -61,5 +68,9 @@ fn transcribe_given_file() {
     let bytes = std::fs::read(wav).unwrap();
     let at = bytes.windows(4).position(|w| w == b"data").unwrap() + 8;
     let audio: Vec<f32> = bytes[at..].chunks_exact(2).map(|b| i16::from_le_bytes([b[0], b[1]]) as f32 / 32768.0).collect();
-    eprintln!("TEXT: {}", transcribe(&ctx, &audio));
+    let prompt = std::env::var("OC_TEST_PROMPT").ok();
+    let started = Instant::now();
+    let text = transcribe_with(&ctx, &audio, Some("auto"), prompt.as_deref());
+    eprintln!("SECONDS: {:.1} for {:.1}s audio", started.elapsed().as_secs_f32(), audio.len() as f32 / 16000.0);
+    eprintln!("TEXT: {}", text);
 }
