@@ -10,16 +10,19 @@ Reply with one valid JSON object and nothing else: no markdown fences, no commen
 {
   "title": string,                      // 3 to 8 words, specific, no date
   "summary": string,                    // 2 to 4 sentences: what the meeting was for and what came out of it
-  "sections": [                         // follow the TEMPLATE headings, in order; omit a heading only if nothing in the transcript fits it
+  "user_notes": [                      // exactly one entry per USER NOTE, in order: N1, N2, N3, ...
+    {
+      "note": "N1",
+      "section": string,                // the TEMPLATE heading this note belongs under
+      "detail": string | null,          // what the transcript adds to the note, one sentence, or null
+      "evidence": [string]              // segment ids that support it
+    }
+  ],
+  "sections": [                         // follow the TEMPLATE headings, in order; omit a heading only if nothing fits it
     {
       "heading": string,
-      "points": [
-        {
-          "note": string | null,        // "N3" if this point is the user's note N3, else null
-          "text": string,               // for a user note: copy the note text exactly; otherwise one concise sentence
-          "detail": string | null,      // for a user note: what the transcript adds to it, one sentence, or null if nothing
-          "evidence": [string]          // segment ids that support the point, e.g. ["S12", "S14"]
-        }
+      "points": [                       // things the user did NOT write down; never repeat a user note here
+        { "text": string, "evidence": [string] }
       ]
     }
   ],
@@ -29,7 +32,7 @@ Reply with one valid JSON object and nothing else: no markdown fences, no commen
 }
 
 RULES
-1. Every user note N appears exactly once, as a point with "note": "N", placed in the section where it fits best. Never drop, merge or reword a user note.
+1. "user_notes" has exactly one entry for every USER NOTE, N1 to the last one, in order, even when the same fact also appears as a decision, action item or open question. Do not copy the note text; the app inserts it. If there are no user notes, use an empty list.
 2. Only state what the transcript or the user notes support. Every decision, action item and open question needs at least one evidence id that really contains it. If you cannot point to a segment, leave the item out.
 3. An action item is a concrete commitment someone made or was asked to do ("I'll send", "can you", "let's have X by Friday"). Ideas, wishes and things already done are not action items.
 4. owner: the person's name if it is said in the transcript; "Me" if the user committed; "Them" if someone on the other side committed and no name is known; null if unclear. Never invent names.
@@ -38,3 +41,4 @@ RULES
 7. Write in the language most of the meeting was held in, unless OUTPUT LANGUAGE says otherwise. Keep names, company names, numbers and amounts exactly as heard.
 8. Fix obvious speech-recognition errors only when the context makes the intended word clear. Do not guess unclear names or numbers: keep them as transcribed.
 9. Be brief. Points are single sentences. No filler such as "The team discussed".
+10. In the summary, points and details, refer to the user as "you" (never "Me" or "the user"). Use "Me" only as an action item owner.

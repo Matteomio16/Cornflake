@@ -52,6 +52,9 @@ pub struct ActionItem {
 pub struct NotesDoc {
     pub title: String,
     pub summary: String,
+    /// notes-v3: one entry per user note saying which section it belongs to. Merged into `sections` by `validate`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub user_notes: Vec<NotePlacement>,
     #[serde(default)]
     pub sections: Vec<Section>,
     #[serde(default)]
@@ -60,6 +63,17 @@ pub struct NotesDoc {
     pub action_items: Vec<ActionItem>,
     #[serde(default)]
     pub open_questions: Vec<Evidenced>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+pub struct NotePlacement {
+    pub note: String,
+    #[serde(default)]
+    pub section: String,
+    #[serde(default)]
+    pub detail: Option<String>,
+    #[serde(default)]
+    pub evidence: Vec<String>,
 }
 
 /// What validation had to fix. Surfaced in evals and kept with each generated version.
@@ -178,6 +192,22 @@ pub fn parse_doc(raw: &str) -> Result<NotesDoc, String> {
 /// and decisions, action items and questions only when backed by the transcript.
 pub fn validate(doc: &mut NotesDoc, user_notes: &[String], segment_count: usize) -> Repairs {
     let mut r = Repairs::default();
+    // Place notes-v3 user note entries into their sections, ahead of the model's own points
+    let placements = std::mem::take(&mut doc.user_notes);
+    for pl in placements.into_iter().rev() {
+        let heading = if pl.section.trim().is_empty() { "Notes".to_string() } else { pl.section.trim().to_string() };
+        let idx = match doc.sections.iter().position(|s| s.heading.trim().eq_ignore_ascii_case(&heading)) {
+            Some(idx) => idx,
+            None => {
+                doc.sections.push(Section { heading, points: vec![] });
+                doc.sections.len() - 1
+            }
+        };
+        doc.sections[idx].points.insert(
+            0,
+            Point { note: Some(pl.note), text: String::new(), detail: pl.detail, evidence: pl.evidence },
+        );
+    }
     let valid_id = |id: &str| -> bool {
         id.strip_prefix('S')
             .and_then(|n| n.parse::<usize>().ok())
@@ -424,6 +454,7 @@ mod tests {
         let mut doc = NotesDoc {
             title: "t".into(),
             summary: "s".into(),
+            user_notes: vec![],
             sections: vec![Section {
                 heading: "Discussion".into(),
                 points: vec![
@@ -448,6 +479,26 @@ mod tests {
         assert_eq!(doc.action_items.len(), 1);
         assert_eq!(r.items_dropped_without_evidence, 2);
         assert_eq!(r.unknown_evidence_ids_removed, 2);
+    }
+
+    #[test]
+    fn v3_placements_merge_into_sections_in_note_order() {
+        let notes = vec!["deck friday".to_string(), "palette frozen".to_string()];
+        let mut doc = parse_doc(
+            r#"{"title":"t","summary":"s",
+               "user_notes":[{"note":"N1","section":"Discussion","detail":"Confirmed.","evidence":["S2"]},
+                             {"note":"N2","section":"Decisions taken","detail":null,"evidence":[]}],
+               "sections":[{"heading":"Discussion","points":[{"text":"Valuation is open.","evidence":["S3"]}]}]}"#,
+        )
+        .unwrap();
+        let r = validate(&mut doc, &notes, 3);
+        assert_eq!(r.notes_missing_added, 0);
+        let d = &doc.sections[0];
+        assert_eq!(d.points[0].text, "deck friday");
+        assert_eq!(d.points[1].text, "Valuation is open.");
+        assert_eq!(doc.sections[1].heading, "Decisions taken");
+        assert_eq!(doc.sections[1].points[0].text, "palette frozen");
+        assert!(doc.user_notes.is_empty());
     }
 
     #[test]

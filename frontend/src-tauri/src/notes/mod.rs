@@ -5,6 +5,7 @@ pub mod export;
 pub mod goldfish;
 pub mod webhooks;
 pub mod llm;
+pub mod mcp_setup;
 pub mod merge;
 pub mod prompts;
 pub mod routing;

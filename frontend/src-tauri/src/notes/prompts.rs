@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-pub const PROMPT_VERSION: &str = "notes-v1";
+pub const PROMPT_VERSION: &str = "notes-v3";
 
 pub const NOTES_MERGE_SYSTEM: &str = include_str!("../../prompts/notes_merge.system.md");
 pub const ROUTING_SYSTEM: &str = include_str!("../../prompts/routing.system.md");

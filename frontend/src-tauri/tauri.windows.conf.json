@@ -2,7 +2,8 @@
   "bundle": {
     "resources": {
       "templates": "templates",
-      "binaries/onnxruntime": "."
+      "binaries/onnxruntime": ".",
+      "../../target/release/cornflake-mcp.exe": "cornflake-mcp.exe"
     }
   }
 }

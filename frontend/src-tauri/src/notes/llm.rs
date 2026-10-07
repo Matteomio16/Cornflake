@@ -78,7 +78,7 @@ pub async fn chat(
     temperature: f32,
 ) -> Result<LlmResult, LlmError> {
     let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(600))
+        .timeout(Duration::from_secs(150))
         .build()
         .map_err(|e| LlmError::Network(e.to_string()))?;
     let mut body = json!({
@@ -98,28 +98,32 @@ pub async fn chat(
     }
     let url = format!("{}/chat/completions", cfg.base_url.trim_end_matches('/'));
 
+    // One retry for timeouts, dropped connections, rate limits and transient upstream errors.
+    // Provider latency occasionally spikes for minutes; a fresh request usually lands on a faster backend.
     let mut attempt = 0;
-    let resp = loop {
+    let (status, text) = loop {
         attempt += 1;
-        let resp = client
-            .post(&url)
-            .bearer_auth(&cfg.api_key)
-            .header("X-Title", "Cornflake")
-            .json(&body)
-            .send()
-            .await
-            .map_err(|e| LlmError::Network(e.to_string()))?;
-        let status = resp.status().as_u16();
-        // One retry on rate limits and transient upstream errors
-        if attempt == 1 && (status == 429 || status == 502 || status == 503) {
-            tokio::time::sleep(Duration::from_secs(5)).await;
-            continue;
+        let result = async {
+            let resp = client
+                .post(&url)
+                .bearer_auth(&cfg.api_key)
+                .header("X-Title", "Cornflake")
+                .json(&body)
+                .send()
+                .await?;
+            let status = resp.status().as_u16();
+            Ok::<_, reqwest::Error>((status, resp.text().await?))
         }
-        break resp;
+        .await;
+        match result {
+            Ok((status, _)) if attempt == 1 && matches!(status, 429 | 502 | 503 | 504) => {
+                tokio::time::sleep(Duration::from_secs(5)).await;
+            }
+            Err(_) if attempt == 1 => {}
+            Ok(ok) => break ok,
+            Err(e) => return Err(LlmError::Network(e.to_string())),
+        }
     };
-
-    let status = resp.status().as_u16();
-    let text = resp.text().await.map_err(|e| LlmError::Network(e.to_string()))?;
     if status == 402 {
         return Err(LlmError::PaymentRequired(provider_message(&text)));
     }

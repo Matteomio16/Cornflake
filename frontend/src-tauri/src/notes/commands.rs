@@ -480,3 +480,19 @@ pub async fn setting_set(state: tauri::State<'_, AppState>, key: String, value: 
     }
     super::export::set_setting(state.db_manager.pool(), &key, value.trim()).await.map_err(db_err)
 }
+
+#[tauri::command]
+pub fn mcp_info(app: tauri::AppHandle) -> super::mcp_setup::McpInfo {
+    super::mcp_setup::info(&app)
+}
+
+#[tauri::command]
+pub fn mcp_register_claude_code(app: tauri::AppHandle) -> Result<String, String> {
+    super::mcp_setup::register_claude_code(&super::mcp_setup::mcp_exe(&app))
+}
+
+/// Returns the backup path of the previous config (empty when there was none).
+#[tauri::command]
+pub fn mcp_register_claude_desktop(app: tauri::AppHandle) -> Result<String, String> {
+    super::mcp_setup::register_desktop(&super::mcp_setup::mcp_exe(&app), &super::mcp_setup::desktop_config_path())
+}
