@@ -4,8 +4,7 @@
 //! local HTTP:                           cornflake-mcp --http 127.0.0.1:3917   (POST /mcp)
 //! Options: --db <path to meeting_minutes.sqlite>
 
-mod db;
-
+use cornflake_mcp::{db, memory};
 use serde_json::{json, Value};
 use sqlx::SqlitePool;
 use std::io::{BufRead, Read, Write};
@@ -26,7 +25,11 @@ fn tools() -> Value {
         {"name": "search_meetings", "description": "Search meeting titles, notes and transcripts for a word or phrase. Returns matching meetings with a snippet.",
          "inputSchema": {"type": "object", "properties": {"query": str_prop("Text to search for"), "limit": {"type": "integer", "description": "Max results, default 10"}}, "required": ["query"]}},
         {"name": "get_action_items", "description": "Action items (task, owner, due) from generated meeting notes, for one meeting, one space, or recent meetings.",
-         "inputSchema": {"type": "object", "properties": {"meeting_id": str_prop("Only this meeting"), "space": str_prop("Only meetings in this space"), "limit": {"type": "integer", "description": "How many recent meetings to scan, default 20"}}}}
+         "inputSchema": {"type": "object", "properties": {"meeting_id": str_prop("Only this meeting"), "space": str_prop("Only meetings in this space"), "limit": {"type": "integer", "description": "How many recent meetings to scan, default 20"}}}},
+        {"name": "list_claude_projects", "description": "List the user's Claude Code projects (folders under ~/.claude/projects) that a meeting can be routed to.",
+         "inputSchema": {"type": "object", "properties": {}}},
+        {"name": "write_meeting_memory", "description": "Route a meeting into a Claude Code project's memory: a memory file in Claude Code format plus a MEMORY.md line. Defaults to a dry run that only returns the preview; pass dry_run=false only after the user approved the preview.",
+         "inputSchema": {"type": "object", "properties": {"meeting_id": str_prop("Meeting id"), "project_id": str_prop("Project id from list_claude_projects"), "dry_run": {"type": "boolean", "description": "Default true: preview only"}}, "required": ["meeting_id", "project_id"]}}
     ])
 }
 
@@ -38,9 +41,13 @@ fn arg_limit(args: &Value, default: i64) -> i64 {
     args.get("limit").and_then(Value::as_i64).unwrap_or(default).clamp(1, 200)
 }
 
-async fn call_tool(pool: &SqlitePool, name: &str, args: &Value) -> Result<String, String> {
+async fn call_tool(pool: &Result<SqlitePool, String>, name: &str, args: &Value) -> Result<String, String> {
     let pretty = |v: Value| serde_json::to_string_pretty(&v).unwrap_or_default();
     let need = |key: &str| arg_str(args, key).ok_or_else(|| format!("missing argument '{key}'"));
+    if name == "list_claude_projects" {
+        return Ok(pretty(json!(memory::discover_projects(&memory::projects_root()))));
+    }
+    let pool = pool.as_ref().map_err(|e| e.clone())?;
     match name {
         "list_spaces" => db::list_spaces(pool).await.map(pretty),
         "list_meetings" => db::list_meetings(pool, arg_str(args, "space"), arg_limit(args, 20))
@@ -52,6 +59,16 @@ async fn call_tool(pool: &SqlitePool, name: &str, args: &Value) -> Result<String
         "get_action_items" => db::action_items(pool, arg_str(args, "meeting_id"), arg_str(args, "space"), arg_limit(args, 20))
             .await
             .map(pretty),
+        "write_meeting_memory" => {
+            let dir = memory::memory_dir_for(&memory::projects_root(), need("project_id")?)?;
+            let facts = db::meeting_facts(pool, need("meeting_id")?).await?;
+            let preview = memory::render(&facts, &dir);
+            let dry_run = args.get("dry_run").and_then(Value::as_bool).unwrap_or(true);
+            if !dry_run {
+                memory::write(&preview)?;
+            }
+            Ok(pretty(json!({"written": !dry_run, "preview": preview})))
+        }
         _ => Err(format!("unknown tool '{name}'")),
     }
 }
@@ -72,10 +89,7 @@ async fn handle(pool: &Result<SqlitePool, String>, msg: &Value) -> Option<Value>
         "tools/call" => {
             let name = msg["params"]["name"].as_str().unwrap_or("");
             let args = msg["params"].get("arguments").cloned().unwrap_or(json!({}));
-            let outcome = match pool {
-                Ok(p) => call_tool(p, name, &args).await,
-                Err(e) => Err(e.clone()),
-            };
+            let outcome = call_tool(pool, name, &args).await;
             Ok(match outcome {
                 Ok(text) => json!({"content": [{"type": "text", "text": text}], "isError": false}),
                 Err(e) => json!({"content": [{"type": "text", "text": e}], "isError": true}),
@@ -199,7 +213,7 @@ mod tests {
     }
 
     async fn call(pool: &SqlitePool, name: &str, args: Value) -> String {
-        call_tool(pool, name, &args).await.unwrap()
+        call_tool(&Ok(pool.clone()), name, &args).await.unwrap()
     }
 
     #[tokio::test]
@@ -214,7 +228,7 @@ mod tests {
         assert!(call(&pool, "search_meetings", json!({"query": "point one"})).await.contains("m1"));
         let items = call(&pool, "get_action_items", json!({})).await;
         assert!(items.contains("Send board pack") && items.contains("Stefan"));
-        assert!(call_tool(&pool, "get_meeting", &json!({})).await.is_err());
+        assert!(call_tool(&Ok(pool.clone()), "get_meeting", &json!({})).await.is_err());
     }
 
     #[tokio::test]
@@ -224,7 +238,7 @@ mod tests {
         assert_eq!(init["result"]["protocolVersion"], "2025-03-26");
         assert!(handle(&pool, &json!({"jsonrpc": "2.0", "method": "notifications/initialized"})).await.is_none());
         let list = handle(&pool, &json!({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})).await.unwrap();
-        assert_eq!(list["result"]["tools"].as_array().unwrap().len(), 6);
+        assert_eq!(list["result"]["tools"].as_array().unwrap().len(), 8);
         let bad = handle(&pool, &json!({"jsonrpc": "2.0", "id": 3, "method": "nope"})).await.unwrap();
         assert_eq!(bad["error"]["code"], -32601);
         let missing_db: Result<SqlitePool, String> = Err("no db".into());

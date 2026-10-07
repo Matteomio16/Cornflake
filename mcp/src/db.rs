@@ -201,3 +201,20 @@ pub async fn action_items(pool: &SqlitePool, meeting_id: Option<&str>, space: Op
     }
     Ok(Value::Array(out))
 }
+
+/// What the memory writer needs: title, date, space and the latest notes JSON.
+pub async fn meeting_facts(pool: &SqlitePool, meeting_id: &str) -> Result<crate::memory::MeetingFacts, String> {
+    let m = get_meeting(pool, meeting_id).await?;
+    let (_, doc_json, _) = latest_notes(pool, meeting_id)
+        .await?
+        .ok_or_else(|| format!("Meeting {meeting_id} has no generated notes yet"))?;
+    let doc: Value = serde_json::from_str(&doc_json).map_err(|e| e.to_string())?;
+    let title = doc["title"].as_str().filter(|t| !t.is_empty()).map(str::to_string).unwrap_or_else(|| m["title"].as_str().unwrap_or("").to_string());
+    Ok(crate::memory::MeetingFacts {
+        meeting_id: meeting_id.to_string(),
+        title,
+        date: m["date"].as_str().unwrap_or("").chars().take(10).collect(),
+        space: m["space"].as_str().map(str::to_string),
+        doc,
+    })
+}
