@@ -143,6 +143,9 @@ whatlang = "0.16.4"
 
 ffmpeg-sidecar = { git = "https://github.com/nathanbabcock/ffmpeg-sidecar", branch = "main" }
 
+# Shared with the MCP server: database reads and Claude Code memory writing
+cornflake-mcp = { path = "../../mcp" }
+
 # OS credential store (Windows Credential Manager, macOS Keychain) for API keys
 keyring = { version = "3", features = ["windows-native", "apple-native"] }
 

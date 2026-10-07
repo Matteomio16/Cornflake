@@ -5,4 +5,5 @@ pub mod export;
 pub mod llm;
 pub mod merge;
 pub mod prompts;
+pub mod routing;
 pub mod store;

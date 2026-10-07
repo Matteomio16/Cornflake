@@ -1110,6 +1110,7 @@ dependencies = [
  "cidre",
  "clap 4.6.1",
  "core-graphics 0.23.2",
+ "cornflake-mcp",
  "cpal",
  "criterion",
  "crossbeam",

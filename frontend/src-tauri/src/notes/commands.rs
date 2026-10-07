@@ -8,6 +8,7 @@ use crate::database::repositories::setting::SettingsRepository;
 use crate::state::AppState;
 use serde::Serialize;
 use sqlx::SqlitePool;
+use std::path::PathBuf;
 
 fn db_err(e: sqlx::Error) -> String {
     e.to_string()
@@ -231,4 +232,104 @@ pub async fn export_set_dir(state: tauri::State<'_, AppState>, dir: String) -> R
     super::export::set_setting(state.db_manager.pool(), super::export::EXPORT_DIR_KEY, &path.display().to_string())
         .await
         .map_err(db_err)
+}
+
+const ROUTING_PROJECTS_KEY: &str = "routing_projects";
+
+/// Claude Code projects found on disk, with the descriptions the user saved for them.
+#[tauri::command]
+pub async fn routing_projects_get(state: tauri::State<'_, AppState>) -> Result<Vec<super::routing::RoutingProject>, String> {
+    let saved: Vec<super::routing::RoutingProject> = super::export::get_setting(state.db_manager.pool(), ROUTING_PROJECTS_KEY)
+        .await
+        .map_err(db_err)?
+        .and_then(|j| serde_json::from_str(&j).ok())
+        .unwrap_or_default();
+    let discovered = cornflake_mcp::memory::discover_projects(&cornflake_mcp::memory::projects_root());
+    Ok(discovered
+        .into_iter()
+        .map(|d| {
+            let s = saved.iter().find(|s| s.id == d.id);
+            super::routing::RoutingProject {
+                id: d.id,
+                name: s.map(|s| s.name.clone()).filter(|n| !n.is_empty()).unwrap_or(d.name),
+                description: s.map(|s| s.description.clone()).unwrap_or_default(),
+            }
+        })
+        .collect())
+}
+
+#[tauri::command]
+pub async fn routing_projects_save(
+    state: tauri::State<'_, AppState>,
+    projects: Vec<super::routing::RoutingProject>,
+) -> Result<(), String> {
+    let json = serde_json::to_string(&projects).map_err(|e| e.to_string())?;
+    super::export::set_setting(state.db_manager.pool(), ROUTING_PROJECTS_KEY, &json).await.map_err(db_err)
+}
+
+#[derive(Serialize)]
+pub struct RoutingSuggestion {
+    pub decision: super::routing::RoutingDecision,
+    /// The memory file that would be written; None when no project fits.
+    pub preview: Option<cornflake_mcp::memory::MemoryPreview>,
+}
+
+async fn meeting_facts(pool: &SqlitePool, meeting_id: &str) -> Result<(cornflake_mcp::memory::MeetingFacts, merge::NotesDoc), String> {
+    let latest = store::notes_versions(pool, meeting_id).await.map_err(db_err)?.into_iter().next()
+        .ok_or("Generate notes first; routing files the generated notes.")?;
+    let doc: merge::NotesDoc = serde_json::from_str(&latest.doc_json).map_err(|e| e.to_string())?;
+    let (title, created_at): (String, String) = sqlx::query_as("SELECT title, created_at FROM meetings WHERE id = ?")
+        .bind(meeting_id)
+        .fetch_one(pool)
+        .await
+        .map_err(db_err)?;
+    let space = store::meeting_space(pool, meeting_id).await.map_err(db_err)?;
+    let facts = cornflake_mcp::memory::MeetingFacts {
+        meeting_id: meeting_id.to_string(),
+        title: if doc.title.trim().is_empty() { title } else { doc.title.clone() },
+        date: created_at.chars().take(10).collect(),
+        space: space.map(|s| s.name),
+        doc: serde_json::from_str(&latest.doc_json).map_err(|e| e.to_string())?,
+    };
+    Ok((facts, doc))
+}
+
+/// Dry run: decides the project and returns the memory file preview. Nothing is written.
+#[tauri::command]
+pub async fn routing_suggest(state: tauri::State<'_, AppState>, meeting_id: String) -> Result<RoutingSuggestion, String> {
+    let pool = state.db_manager.pool();
+    let projects: Vec<_> = routing_projects_get(state.clone()).await?.into_iter().filter(|p| !p.description.trim().is_empty()).collect();
+    if projects.is_empty() {
+        return Err("Describe at least one project in Settings > Routing first.".into());
+    }
+    let (facts, doc) = meeting_facts(pool, &meeting_id).await?;
+    let space = store::meeting_space(pool, &meeting_id).await.map_err(db_err)?;
+    let cfg = resolve_llm_config(pool).await?;
+    let decision = super::routing::decide(
+        &cfg,
+        &projects,
+        &facts.title,
+        space.as_ref().map(|s| s.name.as_str()),
+        space.as_ref().and_then(|s| s.routing_project.as_deref()),
+        &doc,
+    )
+    .await?;
+    let preview = match &decision.project {
+        Some(id) => {
+            let dir = cornflake_mcp::memory::memory_dir_for(&cornflake_mcp::memory::projects_root(), id)?;
+            Some(cornflake_mcp::memory::render(&facts, &dir))
+        }
+        None => None,
+    };
+    Ok(RoutingSuggestion { decision, preview })
+}
+
+/// Writes the memory file into the chosen project. Only called from an explicit user action.
+#[tauri::command]
+pub async fn routing_write(state: tauri::State<'_, AppState>, meeting_id: String, project_id: String) -> Result<String, String> {
+    let (facts, _) = meeting_facts(state.db_manager.pool(), &meeting_id).await?;
+    let dir = cornflake_mcp::memory::memory_dir_for(&cornflake_mcp::memory::projects_root(), &project_id)?;
+    let preview = cornflake_mcp::memory::render(&facts, &dir);
+    cornflake_mcp::memory::write(&preview)?;
+    Ok(PathBuf::from(&preview.memory_dir).join(&preview.file_name).display().to_string())
 }
