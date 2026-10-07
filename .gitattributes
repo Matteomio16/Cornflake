@@ -1,0 +1,2 @@
+# sqlx stores a checksum of each migration file; every machine must see identical bytes
+frontend/src-tauri/migrations/*.sql text eol=crlf
