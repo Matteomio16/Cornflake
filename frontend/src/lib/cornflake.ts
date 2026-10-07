@@ -125,3 +125,22 @@ export const getWebhooks = () => invoke<string>('webhooks_get');
 export const setWebhooks = (urls: string) => invoke<number>('webhooks_set', { urls });
 export const sendToGoldfish = (meetingId: string, dryRun: boolean) =>
   invoke<{ ok: boolean; source?: string }>('goldfish_import', { meetingId, dryRun });
+
+export interface TranslatedLines {
+  lines: (string | null)[];
+  starts: number[];
+  cost_usd: number | null;
+  model: string;
+}
+
+export const translateTexts = (texts: string[], target: string) =>
+  invoke<TranslatedLines>('translate_texts', { texts, target });
+export const translateMeeting = (meetingId: string, target: string, refresh = false) =>
+  invoke<TranslatedLines>('translate_meeting', { meetingId, target, refresh });
+export const getSetting = (key: string) => invoke<string | null>('setting_get', { key });
+export const setSetting = (key: string, value: string) => invoke<void>('setting_set', { key, value });
+
+export const TRANSLATION_TARGETS = ['English', 'German', 'French', 'Italian', 'Spanish'];
+
+/// Translations attach to transcript lines by start time, which survives pagination.
+export const timeKey = (seconds: number) => seconds.toFixed(2);

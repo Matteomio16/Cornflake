@@ -69,6 +69,7 @@ const TranscriptSegment = memo(function TranscriptSegment({
     timestamp,
     text,
     speaker,
+    translation,
     confidence,
     isStreaming,
     showConfidence,
@@ -77,6 +78,7 @@ const TranscriptSegment = memo(function TranscriptSegment({
     timestamp: number;
     text: string;
     speaker?: 'me' | 'them';
+    translation?: string;
     confidence?: number;
     isStreaming: boolean;
     showConfidence: boolean;
@@ -110,6 +112,9 @@ const TranscriptSegment = memo(function TranscriptSegment({
                         </div>
                     ) : (
                         <p className="text-base text-gray-800 leading-relaxed">{displayText}</p>
+                    )}
+                    {translation && translation !== displayText && (
+                        <p className="text-sm text-gray-500 leading-relaxed mt-0.5">{translation}</p>
                     )}
                 </div>
             </div>
@@ -301,6 +306,7 @@ export const VirtualizedTranscriptView: React.FC<VirtualizedTranscriptViewProps>
                                         timestamp={segment.timestamp}
                                         text={getDisplayText(segment)}
                                         speaker={segment.speaker}
+                                        translation={segment.translation}
                                         confidence={segment.confidence}
                                         isStreaming={isStreaming}
                                         showConfidence={showConfidence}
@@ -358,6 +364,7 @@ export const VirtualizedTranscriptView: React.FC<VirtualizedTranscriptViewProps>
                                         timestamp={segment.timestamp}
                                         text={getDisplayText(segment)}
                                         speaker={segment.speaker}
+                                        translation={segment.translation}
                                         confidence={segment.confidence}
                                         isStreaming={isStreaming}
                                         showConfidence={showConfidence}

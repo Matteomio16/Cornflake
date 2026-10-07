@@ -11,8 +11,8 @@ pub struct LlmConfig {
     pub base_url: String,
     pub api_key: String,
     pub model: String,
-    /// OpenRouter only: ask the model to skip hidden reasoning, which makes flash models several times faster.
-    pub disable_reasoning: bool,
+    /// OpenRouter only: ask for low reasoning effort. GLM 5.3 Flash rejects disabling reasoning outright.
+    pub low_reasoning: bool,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -93,8 +93,8 @@ pub async fn chat(
     if json_mode {
         body["response_format"] = json!({"type": "json_object"});
     }
-    if cfg.disable_reasoning {
-        body["reasoning"] = json!({"enabled": false});
+    if cfg.low_reasoning {
+        body["reasoning"] = json!({"effort": "low"});
     }
     let url = format!("{}/chat/completions", cfg.base_url.trim_end_matches('/'));
 

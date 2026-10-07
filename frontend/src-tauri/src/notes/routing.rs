@@ -129,7 +129,7 @@ mod tests {
 
     #[tokio::test]
     async fn space_setting_wins_without_calling_the_model() {
-        let cfg = LlmConfig { base_url: "http://127.0.0.1:9".into(), api_key: String::new(), model: String::new(), disable_reasoning: true };
+        let cfg = LlmConfig { base_url: "http://127.0.0.1:9".into(), api_key: String::new(), model: String::new(), low_reasoning: true };
         let d = decide(&cfg, &projects(), "t", Some("Portfolio"), Some("b"), &NotesDoc::default()).await.unwrap();
         assert_eq!((d.project.as_deref(), d.source.as_str()), (Some("b"), "space"));
     }

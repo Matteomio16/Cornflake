@@ -4,7 +4,10 @@ import { Transcript, TranscriptSegmentData } from '@/types';
 import { TranscriptView } from '@/components/TranscriptView';
 import { VirtualizedTranscriptView } from '@/components/VirtualizedTranscriptView';
 import { TranscriptButtonGroup } from './TranscriptButtonGroup';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { TranslateBar } from '@/components/Cornflake/TranslateBar';
+import { timeKey, translateMeeting } from '@/lib/cornflake';
 
 interface TranscriptPanelProps {
   transcripts: Transcript[];
@@ -50,7 +53,30 @@ export function TranscriptPanel({
   onRefetchTranscripts,
 }: TranscriptPanelProps) {
   // Convert transcripts to segments if pagination is not used but we want virtualization
-  const convertedSegments = useMemo(() => {
+  const [translations, setTranslations] = useState<Map<string, string>>(new Map());
+  const [translating, setTranslating] = useState(false);
+  const [translationCost, setTranslationCost] = useState<number | null>(null);
+
+  const onTranslate = async (target: string) => {
+    if (!meetingId) return;
+    setTranslating(true);
+    try {
+      const res = await translateMeeting(meetingId, target);
+      const map = new Map<string, string>();
+      res.starts.forEach((start, i) => {
+        const line = res.lines[i];
+        if (line) map.set(timeKey(start), line);
+      });
+      setTranslations(map);
+      setTranslationCost(res.cost_usd);
+    } catch (e) {
+      toast.error(`Translation failed: ${e}`);
+    } finally {
+      setTranslating(false);
+    }
+  };
+
+  const baseSegments = useMemo(() => {
     if (usePagination && segments) {
       return segments;
     }
@@ -65,6 +91,14 @@ export function TranscriptPanel({
     }));
   }, [transcripts, usePagination, segments]);
 
+  const convertedSegments = useMemo(
+    () =>
+      translations.size
+        ? baseSegments.map((s) => ({ ...s, translation: translations.get(timeKey(s.timestamp)) }))
+        : baseSegments,
+    [baseSegments, translations]
+  );
+
   return (
     <div className="flex h-full min-w-0 w-full bg-white flex-col relative @container">
       {/* Title area */}
@@ -78,6 +112,16 @@ export function TranscriptPanel({
           onRefetchTranscripts={onRefetchTranscripts}
         />
       </div>
+
+      {meetingId && convertedSegments.length > 0 && (
+        <TranslateBar
+          label="Translate transcript"
+          busy={translating}
+          active={false}
+          cost={translationCost}
+          onTranslate={onTranslate}
+        />
+      )}
 
       {/* Transcript content - use virtualized view for better performance */}
       <div className="flex-1 overflow-hidden pb-4">
@@ -98,17 +142,6 @@ export function TranscriptPanel({
         />
       </div>
 
-      {/* Custom prompt input at bottom of transcript section */}
-      {!isRecording && convertedSegments.length > 0 && (
-        <div className="p-1 border-t border-gray-200">
-          <textarea
-            placeholder="Add context for AI summary. For example people involved, meeting overview, objective etc..."
-            className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm min-h-[80px] resize-y"
-            value={customPrompt}
-            onChange={(e) => onPromptChange(e.target.value)}
-          />
-        </div>
-      )}
     </div>
   );
 }

@@ -9,7 +9,12 @@ import { useRecordingState } from '@/contexts/RecordingStateContext';
 import { usePermissionCheck } from '@/hooks/usePermissionCheck';
 import { ModalType } from '@/hooks/useModalState';
 import { useIsLinux } from '@/hooks/usePlatform';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { TranslateBar } from '@/components/Cornflake/TranslateBar';
+import { translateTexts } from '@/lib/cornflake';
+
+// Live translation batches new final lines this often, to keep calls few and cheap
+const LIVE_TRANSLATE_INTERVAL_MS = 8000;
 
 /**
  * TranscriptPanel Component
@@ -37,6 +42,46 @@ export function TranscriptPanel({
   const { checkPermissions, isChecking, hasSystemAudio, hasMicrophone } = usePermissionCheck();
   const isLinux = useIsLinux();
 
+  const [liveTarget, setLiveTarget] = useState<string | null>(null);
+  const [liveTranslations, setLiveTranslations] = useState<Map<string, string>>(new Map());
+  const [liveCost, setLiveCost] = useState<number | null>(null);
+  const inFlight = useRef(new Set<string>());
+  // Refs so the timer below is not restarted by every new transcript line
+  const transcriptsRef = useRef(transcripts);
+  const translatedRef = useRef(liveTranslations);
+  transcriptsRef.current = transcripts;
+  translatedRef.current = liveTranslations;
+
+  useEffect(() => {
+    if (!liveTarget) return;
+    const tick = async () => {
+      const pending = transcriptsRef.current.filter(
+        (t) => !t.is_partial && !translatedRef.current.has(t.id) && !inFlight.current.has(t.id)
+      );
+      if (!pending.length) return;
+      pending.forEach((t) => inFlight.current.add(t.id));
+      try {
+        const res = await translateTexts(pending.map((t) => t.text), liveTarget);
+        setLiveTranslations((prev) => {
+          const next = new Map(prev);
+          pending.forEach((t, i) => {
+            const line = res.lines[i];
+            if (line) next.set(t.id, line);
+          });
+          return next;
+        });
+        setLiveCost((c) => (res.cost_usd == null ? c : (c ?? 0) + res.cost_usd));
+      } catch (e) {
+        console.error('Live translation failed:', e);
+      } finally {
+        pending.forEach((t) => inFlight.current.delete(t.id));
+      }
+    };
+    void tick();
+    const timer = setInterval(tick, LIVE_TRANSLATE_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [liveTarget]);
+
   // Convert transcripts to segments for virtualized view
   const segments = useMemo(() =>
     transcripts.map(t => ({
@@ -46,8 +91,9 @@ export function TranscriptPanel({
       text: t.text,
       confidence: t.confidence,
       speaker: t.speaker,
+      translation: liveTranslations.get(t.id),
     })),
-    [transcripts]
+    [transcripts, liveTranslations]
   );
 
   return (
@@ -89,6 +135,17 @@ export function TranscriptPanel({
           </div>
         </div>
       </div>
+
+      {transcripts.length > 0 && (
+        <TranslateBar
+          label="Translate live"
+          busy={false}
+          active={liveTarget !== null}
+          cost={liveCost}
+          onTranslate={(target) => setLiveTarget(target)}
+          onStop={() => setLiveTarget(null)}
+        />
+      )}
 
       {/* Permission Warning - Not needed on Linux */}
       {!isRecording && !isChecking && !isLinux && (

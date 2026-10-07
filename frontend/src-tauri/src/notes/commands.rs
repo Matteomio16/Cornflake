@@ -26,14 +26,14 @@ pub async fn resolve_llm_config(pool: &SqlitePool) -> Result<LlmConfig, String> 
                 .await
                 .map_err(db_err)?
                 .ok_or("No OpenRouter key saved. Add it in Settings.")?;
-            Ok(LlmConfig { base_url: OPENROUTER_BASE_URL.into(), api_key, model: setting.model, disable_reasoning: true })
+            Ok(LlmConfig { base_url: OPENROUTER_BASE_URL.into(), api_key, model: setting.model, low_reasoning: true })
         }
         "custom-openai" => {
             let c = SettingsRepository::get_custom_openai_config(pool)
                 .await
                 .map_err(db_err)?
                 .ok_or("Custom endpoint is not configured.")?;
-            Ok(LlmConfig { base_url: c.endpoint, api_key: c.api_key.unwrap_or_default(), model: c.model, disable_reasoning: false })
+            Ok(LlmConfig { base_url: c.endpoint, api_key: c.api_key.unwrap_or_default(), model: c.model, low_reasoning: false })
         }
         "ollama" => {
             let host = setting.ollama_endpoint.unwrap_or_else(|| "http://localhost:11434".into());
@@ -41,7 +41,7 @@ pub async fn resolve_llm_config(pool: &SqlitePool) -> Result<LlmConfig, String> 
                 base_url: format!("{}/v1", host.trim_end_matches('/')),
                 api_key: "ollama".into(),
                 model: setting.model,
-                disable_reasoning: false,
+                low_reasoning: false,
             })
         }
         other => Err(format!(
@@ -405,6 +405,8 @@ async fn translation_config(pool: &SqlitePool) -> Result<LlmConfig, String> {
 #[derive(Serialize)]
 pub struct TranslatedLines {
     pub lines: Vec<Option<String>>,
+    /// Segment start times aligned with `lines` (meeting translations only).
+    pub starts: Vec<f64>,
     pub cost_usd: Option<f64>,
     pub model: String,
 }
@@ -414,7 +416,7 @@ pub struct TranslatedLines {
 pub async fn translate_texts(state: tauri::State<'_, AppState>, texts: Vec<String>, target: String) -> Result<TranslatedLines, String> {
     let cfg = translation_config(state.db_manager.pool()).await?;
     let t = super::translate::translate(&cfg, &texts, &target).await?;
-    Ok(TranslatedLines { lines: t.lines, cost_usd: t.cost_usd, model: cfg.model })
+    Ok(TranslatedLines { lines: t.lines, starts: vec![], cost_usd: t.cost_usd, model: cfg.model })
 }
 
 /// Translates a saved meeting's transcript once per language and caches it.
@@ -426,6 +428,8 @@ pub async fn translate_meeting(
     refresh: Option<bool>,
 ) -> Result<TranslatedLines, String> {
     let pool = state.db_manager.pool();
+    let segments = store::meeting_segments(pool, &meeting_id).await.map_err(db_err)?;
+    let starts: Vec<f64> = segments.iter().map(|s| s.start).collect();
     if !refresh.unwrap_or(false) {
         let cached: Option<(String, String, Option<f64>)> =
             sqlx::query_as("SELECT lines_json, model, cost_usd FROM meeting_translations WHERE meeting_id = ? AND target = ?")
@@ -435,10 +439,10 @@ pub async fn translate_meeting(
                 .await
                 .map_err(db_err)?;
         if let Some((json, model, cost)) = cached {
-            return Ok(TranslatedLines { lines: serde_json::from_str(&json).unwrap_or_default(), cost_usd: cost, model });
+            return Ok(TranslatedLines { lines: serde_json::from_str(&json).unwrap_or_default(), starts, cost_usd: cost, model });
         }
     }
-    let texts: Vec<String> = store::meeting_segments(pool, &meeting_id).await.map_err(db_err)?.into_iter().map(|s| s.text).collect();
+    let texts: Vec<String> = segments.into_iter().map(|s| s.text).collect();
     if texts.is_empty() {
         return Err("This meeting has no transcript yet.".into());
     }
@@ -458,7 +462,7 @@ pub async fn translate_meeting(
     .execute(pool)
     .await
     .map_err(db_err)?;
-    Ok(TranslatedLines { lines: t.lines, cost_usd: t.cost_usd, model: cfg.model })
+    Ok(TranslatedLines { lines: t.lines, starts, cost_usd: t.cost_usd, model: cfg.model })
 }
 
 #[tauri::command]

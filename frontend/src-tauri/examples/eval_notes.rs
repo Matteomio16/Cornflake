@@ -104,7 +104,7 @@ async fn main() {
     };
     // Third argument "reasoning" keeps the model's hidden reasoning on, for comparison runs
     let reasoning = args.get(3).map_or(false, |a| a == "reasoning");
-    let cfg = LlmConfig { base_url: OPENROUTER_BASE_URL.into(), api_key, model: model.clone(), disable_reasoning: !reasoning };
+    let cfg = LlmConfig { base_url: OPENROUTER_BASE_URL.into(), api_key, model: model.clone(), low_reasoning: !reasoning };
 
     let cases_dir = repo_root().join("eval").join("cases");
     let mut paths: Vec<_> = std::fs::read_dir(&cases_dir)
@@ -221,7 +221,7 @@ async fn main() {
     let pct = |a: usize, b: usize| if b == 0 { 100.0 } else { 100.0 * a as f64 / b as f64 };
 
     let mut md = format!(
-        "# Notes eval\n\nModel `{model}` (reasoning {}), prompts `{}`, {} cases.\n\n\
+        "# Notes eval\n\nModel `{model}` (reasoning effort {}), prompts `{}`, {} cases.\n\n\
          | Metric | Value |\n|---|---|\n\
          | Valid notes produced | {ok}/{} ({:.0}%) |\n\
          | Valid JSON on first try | {first}/{} ({:.0}%) |\n\
@@ -236,7 +236,7 @@ async fn main() {
          | Total cost | ${cost:.4} |\n\
          | Cost per meeting-hour | ${:.4} |\n\n\
          | Case | Lang | OK | Actions found/expected | Unsupported | Traps | Routed (expected) | Cost |\n|---|---|---|---|---|---|---|---|\n",
-        if reasoning { "on" } else { "off" },
+        if reasoning { "default" } else { "low" },
         app_lib::notes::prompts::PROMPT_VERSION,
         scores.len(),
         scores.len(), pct(ok, scores.len()),

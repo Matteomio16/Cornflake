@@ -143,4 +143,5 @@ export interface TranscriptSegmentData {
   text: string;
   confidence?: number;
   speaker?: 'me' | 'them';
+  translation?: string;
 }
