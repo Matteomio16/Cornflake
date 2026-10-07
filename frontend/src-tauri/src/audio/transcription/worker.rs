@@ -5,7 +5,7 @@
 use super::engine::TranscriptionEngine;
 use super::provider::TranscriptionError;
 use crate::audio::AudioChunk;
-use log::{error, info, warn};
+use log::{debug, error, info, warn};
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
@@ -168,12 +168,12 @@ pub fn start_transcription_task<R: Runtime>(
                                         None => "N/A".to_string(),
                                     };
 
-                                    info!("🔍 Worker {} transcription result: text='{}', confidence={}, partial={}",
+                                    debug!("🔍 Worker {} transcription result: text='{}', confidence={}, partial={}",
                 worker_id, transcript, confidence_str, is_partial);
 
                                     if should_emit_transcript(&transcript) {
                                         // PERFORMANCE: Only log transcription results, not every processing step
-                                        info!("✅ Worker {} transcribed: {} (confidence: {}, partial: {})",
+                                        debug!("✅ Worker {} transcribed: {} (confidence: {}, partial: {})",
                                               worker_id, transcript, confidence_str, is_partial);
 
                                         // Emit speech-detected event for frontend UX (only on first detection per session)
@@ -454,7 +454,7 @@ async fn transcribe_chunk_with_provider<R: Runtime>(
                         return Ok((String::new(), Some(confidence), is_partial));
                     }
 
-                    info!(
+                    debug!(
                         "Whisper transcription complete for chunk {}: '{}' (confidence: {:.2}, partial: {})",
                         chunk.chunk_id, cleaned_text, confidence, is_partial
                     );
@@ -490,7 +490,7 @@ async fn transcribe_chunk_with_provider<R: Runtime>(
                         return Ok((String::new(), None, false));
                     }
 
-                    info!(
+                    debug!(
                         "Parakeet transcription complete for chunk {}: '{}'",
                         chunk.chunk_id, cleaned_text
                     );
