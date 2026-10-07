@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { formatNoteTitleDate, readPendingNote } from '@/lib/cornflake';
 import { invoke } from '@tauri-apps/api/core';
 import { useTranscripts } from '@/contexts/TranscriptContext';
 import { useSidebar } from '@/components/Sidebar/SidebarProvider';
@@ -149,7 +150,8 @@ export function useRecordingStart(
 
       console.log('Selected transcription model ready - setting up meeting title and state');
 
-      const randomTitle = generateMeetingTitle();
+      const pending = readPendingNote();
+      const randomTitle = pending?.title || `Note, ${formatNoteTitleDate()}`;
       setMeetingTitle(randomTitle);
 
       // Set STARTING status before initiating backend recording

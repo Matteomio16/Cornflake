@@ -214,5 +214,71 @@
 }
 /* Cornflake notes: the user's own text stays dark, model-added text is grey italic */
 .cornflake-notes em {
-  color: #6b7280;
+  color: var(--cf-muted);
+}
+
+/* Cornflake surfaces: Granola-style paper ground, warm-grey sidebar, one gold accent */
+:root {
+  --cf-bg: #fdfdfc;
+  --cf-side: #f6f5f2;
+  --cf-ink: #1c1b19;
+  --cf-muted: #6b6862;
+  --cf-line: #e8e6e1;
+  --cf-hover: #efede8;
+  --cf-gold: #e9a800;
+  --cf-gold-ink: #8a6200;
+  --cf-gold-soft: #fbf1d6;
+  --cf-them: #f1f0ec;
+  --cf-primary: #14213d;
+  --cf-primary-ink: #ffffff;
+  --cf-danger: #b42318;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --cf-bg: #161616;
+    --cf-side: #1d1d1c;
+    --cf-ink: #ecebe8;
+    --cf-muted: #a3a09a;
+    --cf-line: #2c2b29;
+    --cf-hover: #262524;
+    --cf-gold: #f2b705;
+    --cf-gold-ink: #f2c94c;
+    --cf-gold-soft: #3a2f0f;
+    --cf-them: #242422;
+    --cf-primary: #ecebe8;
+    --cf-primary-ink: #161616;
+    --cf-danger: #f97066;
+  }
+}
+
+.cf-surface {
+  background: var(--cf-bg);
+  color: var(--cf-ink);
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+}
+
+.cf-surface ::selection {
+  background: var(--cf-gold-soft);
+  color: var(--cf-ink);
+}
+
+.cf-surface :focus-visible {
+  outline: 2px solid var(--cf-gold);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.cf-surface textarea,
+.cf-surface input {
+  caret-color: var(--cf-gold);
+}
+
+.cf-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--cf-line) transparent;
+}
+
+.cf-tabular {
+  font-variant-numeric: tabular-nums;
 }

@@ -21,6 +21,7 @@ export interface CurrentMeeting {
   id: string;
   title: string;
   space_id?: string | null;
+  created_at?: string;
 }
 
 // Search result type for transcript search
@@ -104,11 +105,12 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const fetchMeetings = React.useCallback(async () => {
     if (serverAddress) {
       try {
-        const meetings = await invoke('api_get_meetings') as Array<{ id: string, title: string, space_id: string | null }>;
+        const meetings = await invoke('api_get_meetings') as Array<{ id: string, title: string, space_id: string | null, created_at: string }>;
         const transformedMeetings = meetings.map((meeting: any) => ({
           id: meeting.id,
           title: meeting.title,
           space_id: meeting.space_id ?? null,
+          created_at: meeting.created_at,
         }));
         setSpaces(await listSpaces());
         setMeetings(transformedMeetings);
@@ -153,7 +155,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 
   // Update current meeting when on home page
   useEffect(() => {
-    if (pathname === '/') {
+    if (pathname === '/live') {
       setCurrentMeeting({ id: 'intro-call', title: '+ New Call' });
     }
     setSidebarItems(baseItems);
@@ -168,7 +170,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const handleRecordingToggle = () => {
     if (!isRecording) {
       // Check if already on home page
-      if (pathname === '/') {
+      if (pathname === '/live') {
         // Already on home - trigger recording directly via custom event
         console.log('Triggering recording from sidebar (already on home page)');
         window.dispatchEvent(new CustomEvent('start-recording-from-sidebar'));
@@ -176,7 +178,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
         // Not on home - navigate and use auto-start mechanism
         console.log('Navigating to home page with auto-start flag');
         sessionStorage.setItem('autoStartRecording', 'true');
-        router.push('/');
+        router.push('/live');
       }
 
       // Track recording initiation from sidebar

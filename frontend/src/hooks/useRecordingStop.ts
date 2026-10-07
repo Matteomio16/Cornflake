@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { clearLiveNotes, readLiveNotes, saveUserNotes } from '@/lib/cornflake';
+import { clearLiveNotes, clearPendingNote, readLiveNotes, readPendingNote, saveUserNotes, setMeetingAttendees } from '@/lib/cornflake';
 import { useRouter } from 'next/navigation';
 import { listen } from '@tauri-apps/api/event';
 import { toast } from 'sonner';
@@ -289,6 +289,12 @@ export function useRecordingStop(
               });
             }
           }
+
+          const pendingNote = readPendingNote();
+          if (pendingNote?.attendees.length) {
+            await setMeetingAttendees(meetingId, pendingNote.attendees).catch((e) => console.error('Failed to save attendees:', e));
+          }
+          clearPendingNote();
 
           const liveNotes = readLiveNotes();
           if (liveNotes.trim()) {

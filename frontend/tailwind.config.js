@@ -14,6 +14,21 @@ module.exports = {
   			]
   		},
   		colors: {
+  			cf: {
+  				bg: 'var(--cf-bg)',
+  				side: 'var(--cf-side)',
+  				ink: 'var(--cf-ink)',
+  				muted: 'var(--cf-muted)',
+  				line: 'var(--cf-line)',
+  				hover: 'var(--cf-hover)',
+  				gold: 'var(--cf-gold)',
+  				'gold-ink': 'var(--cf-gold-ink)',
+  				'gold-soft': 'var(--cf-gold-soft)',
+  				them: 'var(--cf-them)',
+  				primary: 'var(--cf-primary)',
+  				'primary-ink': 'var(--cf-primary-ink)',
+  				danger: 'var(--cf-danger)'
+  			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			border: 'hsl(var(--border))',

@@ -12,26 +12,21 @@ export function LiveNotesPad({ isRecording }: { isRecording: boolean }) {
   }, [isRecording]);
 
   return (
-    <section className="flex flex-col w-2/5 min-w-[280px] border-r border-gray-200 bg-white">
-      <header className="pl-12 pr-5 pt-4 pb-2">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-sm font-semibold text-gray-900">My notes</h2>
-          <span className="text-xs text-gray-500">Kept exactly as you type them</span>
-        </div>
-        <div className="mt-1">
-          <ConsentMessage />
-        </div>
-      </header>
+    <section aria-label="My notes">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-[12px] text-cf-muted">Your notes stay exactly as you type them</span>
+        <ConsentMessage />
+      </div>
       <textarea
         value={notes}
         onChange={(e) => {
           setNotes(e.target.value);
           writeLiveNotes(e.target.value);
         }}
-        placeholder={'Rough bullets, one per line.\n- pricing 40k?\n- follow up on churn'}
+        placeholder={'Write notes...\n- pricing 40k?\n- follow up on churn'}
         aria-label="My notes"
         spellCheck
-        className="flex-1 resize-none pl-12 pr-5 pb-5 text-[15px] leading-relaxed text-gray-900 placeholder:text-gray-400 focus:outline-none"
+        className="min-h-[50vh] w-full resize-none bg-transparent text-[16px] leading-relaxed text-cf-ink placeholder:text-cf-muted focus:outline-none"
       />
     </section>
   );

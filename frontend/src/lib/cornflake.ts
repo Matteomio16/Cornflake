@@ -16,6 +16,7 @@ export interface Template {
 }
 
 export interface GeneratedNotes {
+  names_corrected: number;
   version_id: string;
   template: string;
   markdown: string;
@@ -144,3 +145,63 @@ export const TRANSLATION_TARGETS = ['English', 'German', 'French', 'Italian', 'S
 
 /// Translations attach to transcript lines by start time, which survives pagination.
 export const timeKey = (seconds: number) => seconds.toFixed(2);
+
+export interface CalendarEvent {
+  uid: string;
+  title: string;
+  start: string;
+  end: string;
+  attendees: string[];
+  location: string | null;
+  video_url: string | null;
+}
+
+export const calendarUpcoming = (limit = 5, refresh = false) =>
+  invoke<CalendarEvent[]>('calendar_upcoming', { limit, refresh });
+export const calendarIsConnected = () => invoke<boolean>('calendar_is_connected');
+export const calendarSetUrl = (url: string) => invoke<number>('calendar_set_url', { url });
+export const calendarClear = () => invoke<void>('calendar_clear');
+export const getVocabulary = () => invoke<string>('vocabulary_get');
+export const setVocabulary = (text: string) => invoke<number>('vocabulary_set', { text });
+export const setMeetingAttendees = (meetingId: string, attendees: string[]) =>
+  invoke<void>('meeting_set_attendees', { meetingId, attendees });
+export const getMeetingAttendees = (meetingId: string) => invoke<string[]>('meeting_get_attendees', { meetingId });
+export const revertCorrections = (meetingId: string) => invoke<number>('transcript_revert_corrections', { meetingId });
+
+// The calendar event a note is being taken for, kept until the recording is saved as a meeting
+export interface PendingNote {
+  title: string;
+  attendees: string[];
+  eventUid?: string;
+}
+
+const PENDING_NOTE_KEY = 'cornflake.pendingNote';
+
+export function readPendingNote(): PendingNote | null {
+  try {
+    const raw = localStorage.getItem(PENDING_NOTE_KEY);
+    return raw ? (JSON.parse(raw) as PendingNote) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function writePendingNote(note: PendingNote) {
+  try {
+    localStorage.setItem(PENDING_NOTE_KEY, JSON.stringify(note));
+  } catch {
+    // Storage unavailable: the note still records, with a generated title
+  }
+}
+
+export function clearPendingNote() {
+  try {
+    localStorage.removeItem(PENDING_NOTE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+export function formatNoteTitleDate(d = new Date()) {
+  return d.toLocaleString(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+}

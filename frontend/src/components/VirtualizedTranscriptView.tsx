@@ -85,38 +85,32 @@ const TranscriptSegment = memo(function TranscriptSegment({
 }) {
     const displayText = cleanStopWords(text) || (text.trim() === '' ? '[Silence]' : text);
 
+    const mine = speaker === 'me';
     return (
-        <div id={`segment-${id}`} className="mb-3">
-            <div className="flex items-start gap-2">
-                <Tooltip>
-                    <TooltipTrigger>
-                        <span className="text-xs text-gray-400 mt-1 flex-shrink-0 min-w-[50px]">
-                            {formatRecordingTime(timestamp)}
-                        </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        {confidence !== undefined && showConfidence && (
-                            <ConfidenceIndicator confidence={confidence} showIndicator={showConfidence} />
-                        )}
-                    </TooltipContent>
-                </Tooltip>
-                {speaker && (
-                    <span className={`text-xs font-medium mt-1 flex-shrink-0 w-10 ${speaker === 'me' ? 'text-blue-700' : 'text-gray-600'}`}>
-                        {speaker === 'me' ? 'Me' : 'Them'}
-                    </span>
-                )}
-                <div className="flex-1">
-                    {isStreaming ? (
-                        <div className="bg-gray-100 border border-gray-200 rounded-lg px-3 py-2">
-                            <p className="text-base text-gray-800 leading-relaxed">{displayText}</p>
-                        </div>
-                    ) : (
-                        <p className="text-base text-gray-800 leading-relaxed">{displayText}</p>
-                    )}
+        <div id={`segment-${id}`} className={`mb-2.5 flex ${mine ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[85%] ${mine ? 'items-end' : 'items-start'} flex flex-col`}>
+                <div
+                    className={`rounded-2xl px-3.5 py-2 text-[14px] leading-relaxed text-cf-ink ${
+                        mine ? 'rounded-br-md bg-cf-gold-soft' : 'rounded-bl-md bg-cf-them'
+                    } ${isStreaming ? 'opacity-80' : ''}`}
+                >
+                    <p>{displayText}</p>
                     {translation && translation !== displayText && (
-                        <p className="text-sm text-gray-500 leading-relaxed mt-0.5">{translation}</p>
+                        <p className="mt-1 border-t border-cf-line pt-1 text-[13px] text-cf-muted">{translation}</p>
                     )}
                 </div>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span className="mt-0.5 px-1 text-[11px] text-cf-muted cf-tabular">
+                            {speaker ? (mine ? 'You' : 'Them') : 'Speaker'} · {formatRecordingTime(timestamp)}
+                        </span>
+                    </TooltipTrigger>
+                    {confidence !== undefined && showConfidence && (
+                        <TooltipContent>
+                            <ConfidenceIndicator confidence={confidence} showIndicator={showConfidence} />
+                        </TooltipContent>
+                    )}
+                </Tooltip>
             </div>
         </div>
     );
@@ -269,7 +263,7 @@ export const VirtualizedTranscriptView: React.FC<VirtualizedTranscriptViewProps>
                         </>
                     ) : (
                         <>
-                            <p className="text-lg font-semibold">Welcome to Cornflake</p>
+                            <p className="text-[15px] font-medium text-cf-ink">The transcript appears here</p>
                             <p className="text-xs mt-1">Start recording to see live transcription</p>
                         </>
                     )}

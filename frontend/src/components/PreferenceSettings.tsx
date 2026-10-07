@@ -2,6 +2,7 @@
 
 import { ExportSettings } from '@/components/Cornflake/ExportSettings';
 import { ClaudeConnectSettings } from '@/components/Cornflake/ClaudeConnectSettings';
+import { CalendarSettings } from '@/components/Cornflake/CalendarSettings';
 import { RoutingSettings } from '@/components/Cornflake/RoutingSettings';
 import { WebhookSettings } from '@/components/Cornflake/WebhookSettings';
 import { TranslationSettings } from '@/components/Cornflake/TranslationSettings';
@@ -162,6 +163,8 @@ export function PreferenceSettings() {
           <Switch checked={notificationsEnabledValue} onCheckedChange={setNotificationsEnabled} />
         </div>
       </div>
+
+      <CalendarSettings />
 
       <ClaudeConnectSettings />
 

@@ -1,10 +1,10 @@
 'use client'
 
+import { Suspense } from 'react'
+import { AppSidebar } from '@/components/Cornflake/AppSidebar'
 import './globals.css'
 import { Source_Sans_3 } from 'next/font/google'
-import Sidebar from '@/components/Sidebar'
 import { SidebarProvider } from '@/components/Sidebar/SidebarProvider'
-import MainContent from '@/components/MainContent'
 import { Toaster, toast } from 'sonner'
 import "sonner/dist/styles.css"
 import { useState, useEffect, useCallback } from 'react'
@@ -247,9 +247,11 @@ export default function RootLayout({
                               {showOnboarding ? (
                                 <OnboardingFlow onComplete={handleOnboardingComplete} />
                               ) : (
-                                <div className="flex">
-                                  <Sidebar />
-                                  <MainContent>{children}</MainContent>
+                                <div className="cf-surface flex h-screen overflow-hidden">
+                                  <Suspense fallback={null}>
+                                    <AppSidebar />
+                                  </Suspense>
+                                  <main className="min-w-0 flex-1 overflow-hidden">{children}</main>
                                 </div>
                               )}
                               {/* Import audio overlay and dialog */}

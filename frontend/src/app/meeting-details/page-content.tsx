@@ -61,6 +61,7 @@ export default function PageContent({
   const [customPrompt, setCustomPrompt] = useState<string>('');
   const isRecording = false;
   const [activeTab, setActiveTab] = useState<MeetingDetailsTab>('transcript');
+  const [transcriptOpen, setTranscriptOpen] = useState(false);
 
   // Ref to store the modal open function from SummaryGeneratorButtonGroup
   const openModelSettingsRef = useRef<(() => void) | null>(null);
@@ -160,20 +161,33 @@ export default function PageContent({
 
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
-      className="flex flex-col h-screen min-w-0 bg-gray-50"
-    >
-      <div className="flex flex-1 min-w-0 overflow-hidden">
-        <MeetingDetailsSplitView
-          activeTab={activeTab}
-          onTabChange={(tab) => {
-            manuallySelectedTabMeetingIdsRef.current.add(meeting.id);
-            setActiveTab(tab);
-          }}
-          transcript={
+    <div className="relative flex h-screen min-w-0 flex-col bg-cf-bg">
+      <div className="cf-scroll flex-1 overflow-y-auto">
+        <NotesPanel
+          meetingId={meeting.id}
+          title={meetingData.meetingTitle || meeting.title}
+          createdAt={meeting.created_at}
+          onSpaceChanged={refetchMeetings}
+          autoGenerate={shouldAutoGenerate}
+          onAutoGenerateStarted={onAutoGenerateComplete}
+        />
+      </div>
+
+      {transcriptOpen && (
+        <aside
+          className="absolute right-0 top-0 bottom-0 z-20 flex w-[460px] max-w-[60%] flex-col border-l border-cf-line bg-cf-bg shadow-[-8px_0_24px_rgba(0,0,0,0.06)]"
+          aria-label="Transcript"
+        >
+          <div className="flex items-center justify-between border-b border-cf-line px-4 py-3">
+            <h2 className="text-[14px] font-semibold text-cf-ink">Transcript</h2>
+            <button
+              onClick={() => setTranscriptOpen(false)}
+              className="rounded-md px-2 py-1 text-[13px] text-cf-muted hover:bg-cf-hover hover:text-cf-ink"
+            >
+              Close
+            </button>
+          </div>
+          <div className="flex min-h-0 flex-1">
             <TranscriptPanel
               transcripts={meetingData.transcripts}
               customPrompt={customPrompt}
@@ -193,17 +207,19 @@ export default function PageContent({
               meetingFolderPath={meeting.folder_path}
               onRefetchTranscripts={onRefetchTranscripts}
             />
-          }
-          summary={
-            <NotesPanel
-              meetingId={meeting.id}
-              onSpaceChanged={refetchMeetings}
-              autoGenerate={shouldAutoGenerate}
-              onAutoGenerateStarted={onAutoGenerateComplete}
-            />
-          }
-        />
+          </div>
+        </aside>
+      )}
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-6 z-30 flex justify-center">
+        <button
+          onClick={() => setTranscriptOpen((o) => !o)}
+          aria-pressed={transcriptOpen}
+          className="pointer-events-auto rounded-full border border-cf-line bg-cf-bg px-4 py-2 text-[13px] font-medium text-cf-ink shadow-[0_6px_20px_rgba(0,0,0,0.10)] hover:bg-cf-hover"
+        >
+          {transcriptOpen ? 'Hide transcript' : 'Transcript'}
+        </button>
       </div>
-    </motion.div>
+    </div>
   );
 }
