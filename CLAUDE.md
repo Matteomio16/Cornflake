@@ -10,6 +10,7 @@ Tauri 2 (Rust core in `frontend/src-tauri`) + Next.js 14 static export (`fronten
 - whisper-rs needs libclang: `pip install libclang`, then set `LIBCLANG_PATH` to the `clang\native` folder inside the Python site-packages.
 - `cargo check` in `frontend/src-tauri`; `corepack pnpm exec tsc --noEmit` in `frontend`.
 - `build.rs` downloads FFmpeg on first build.
+- Installer builds add the MCP server with `--config src-tauri/tauri.bundle.conf.json` (dev and test builds do not need it).
 
 ## Rules
 - No telemetry, no emojis in UI copy or code, no keys in the repo or in files. Keys live in Windows Credential Manager.

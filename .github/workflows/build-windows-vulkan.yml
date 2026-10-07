@@ -47,7 +47,8 @@ jobs:
 
       - name: Build installer
         working-directory: frontend
-        run: pnpm tauri build --features vulkan
+        # tauri.bundle.conf.json adds the MCP server, which beforeBuildCommand builds first
+        run: pnpm tauri build --features vulkan --config src-tauri/tauri.bundle.conf.json
 
       - uses: actions/upload-artifact@v4
         with:
