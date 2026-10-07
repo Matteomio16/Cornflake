@@ -2,6 +2,8 @@
 
 pub mod commands;
 pub mod export;
+pub mod goldfish;
+pub mod webhooks;
 pub mod llm;
 pub mod merge;
 pub mod prompts;

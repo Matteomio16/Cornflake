@@ -7,6 +7,7 @@ import remarkGfm from 'remark-gfm';
 import { toast } from 'sonner';
 import {
   exportMeetingMarkdown,
+  sendToGoldfish,
   formatCost,
   generateNotes,
   getMeetingSpace,
@@ -203,6 +204,21 @@ export function NotesPanel({
                 className="underline"
               >
                 Export
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    await sendToGoldfish(meetingId, true);
+                    if (!window.confirm('Goldfish accepted a dry run. Import these notes into Goldfish now? Goldfish has no undo for imports.')) return;
+                    await sendToGoldfish(meetingId, false);
+                    toast.success('Sent to Goldfish');
+                  } catch (e) {
+                    toast.error(String(e));
+                  }
+                }}
+                className="underline"
+              >
+                Send to Goldfish
               </button>
             </div>
             <div className="cornflake-notes prose prose-sm max-w-none">

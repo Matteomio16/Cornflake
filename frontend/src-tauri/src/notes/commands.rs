@@ -191,6 +191,30 @@ pub async fn notes_generate(
         }
         Err(e) => log::warn!("cannot read export folder setting: {e}"),
     }
+    let hooks = super::webhooks::urls(pool).await;
+    if !hooks.is_empty() {
+        let space = store::meeting_space(pool, &meeting_id).await.ok().flatten().map(|s| s.name);
+        let date: String = sqlx::query_scalar("SELECT created_at FROM meetings WHERE id = ?")
+            .bind(&meeting_id)
+            .fetch_one(pool)
+            .await
+            .unwrap_or_default();
+        let body = super::webhooks::payload(
+            &meeting_id,
+            &res.doc.title,
+            &date,
+            space.as_deref(),
+            &res.markdown,
+            &serde_json::to_value(&res.doc).unwrap_or_default(),
+        );
+        tauri::async_runtime::spawn(async move {
+            for (url, r) in super::webhooks::deliver(&hooks, &body).await {
+                if let Err(e) = r {
+                    log::warn!("webhook {url} failed: {e}");
+                }
+            }
+        });
+    }
     Ok(GeneratedNotes {
         version_id,
         template,
@@ -332,4 +356,32 @@ pub async fn routing_write(state: tauri::State<'_, AppState>, meeting_id: String
     let preview = cornflake_mcp::memory::render(&facts, &dir);
     cornflake_mcp::memory::write(&preview)?;
     Ok(PathBuf::from(&preview.memory_dir).join(&preview.file_name).display().to_string())
+}
+
+/// Sends one meeting to Goldfish. With dry_run Goldfish only validates the folder.
+#[tauri::command]
+pub async fn goldfish_import(state: tauri::State<'_, AppState>, meeting_id: String, dry_run: bool) -> Result<serde_json::Value, String> {
+    let pool = state.db_manager.pool();
+    let root = super::export::export_dir(pool).await.map_err(db_err)?;
+    let exported = super::export::export_meeting(pool, &meeting_id, &root).await?;
+    let folder = super::goldfish::stage(&exported.notes, &meeting_id)?;
+    let ep = super::goldfish::endpoint()?;
+    super::goldfish::import_folder(&ep, &folder, dry_run).await
+}
+
+#[tauri::command]
+pub async fn webhooks_get(state: tauri::State<'_, AppState>) -> Result<String, String> {
+    Ok(super::export::get_setting(state.db_manager.pool(), super::webhooks::WEBHOOKS_KEY)
+        .await
+        .map_err(db_err)?
+        .unwrap_or_default())
+}
+
+#[tauri::command]
+pub async fn webhooks_set(state: tauri::State<'_, AppState>, urls: String) -> Result<usize, String> {
+    let valid = super::webhooks::parse_urls(&urls);
+    super::export::set_setting(state.db_manager.pool(), super::webhooks::WEBHOOKS_KEY, &valid.join("\n"))
+        .await
+        .map_err(db_err)?;
+    Ok(valid.len())
 }

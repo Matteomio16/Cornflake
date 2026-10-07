@@ -120,3 +120,8 @@ export const saveRoutingProjects = (projects: RoutingProject[]) => invoke<void>(
 export const suggestRouting = (meetingId: string) => invoke<RoutingSuggestion>('routing_suggest', { meetingId });
 export const writeRouting = (meetingId: string, projectId: string) =>
   invoke<string>('routing_write', { meetingId, projectId });
+
+export const getWebhooks = () => invoke<string>('webhooks_get');
+export const setWebhooks = (urls: string) => invoke<number>('webhooks_set', { urls });
+export const sendToGoldfish = (meetingId: string, dryRun: boolean) =>
+  invoke<{ ok: boolean; source?: string }>('goldfish_import', { meetingId, dryRun });
