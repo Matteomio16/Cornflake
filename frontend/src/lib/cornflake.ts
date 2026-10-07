@@ -90,3 +90,8 @@ export function formatCost(usd: number | null | undefined): string {
   if (usd < 0.01) return `$${usd.toFixed(4)}`;
   return `$${usd.toFixed(2)}`;
 }
+
+export const exportMeetingMarkdown = (meetingId: string) =>
+  invoke<{ notes_path: string; transcript_path: string }>('export_meeting_markdown', { meetingId });
+export const getExportDir = () => invoke<string>('export_get_dir');
+export const setExportDir = (dir: string) => invoke<void>('export_set_dir', { dir });

@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { toast } from 'sonner';
 import {
+  exportMeetingMarkdown,
   formatCost,
   generateNotes,
   getMeetingSpace,
@@ -191,6 +192,16 @@ export function NotesPanel({
                 className="ml-auto underline"
               >
                 Copy markdown
+              </button>
+              <button
+                onClick={() =>
+                  exportMeetingMarkdown(meetingId)
+                    .then((p) => toast.success(`Exported to ${p.notes_path}`))
+                    .catch((e) => toast.error(`Export failed: ${e}`))
+                }
+                className="underline"
+              >
+                Export
               </button>
             </div>
             <div className="cornflake-notes prose prose-sm max-w-none">

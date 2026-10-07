@@ -181,6 +181,15 @@ pub async fn notes_generate(
         Err(e) => return Err(e.to_string()),
     };
     let version_id = store::insert_notes_version(pool, &meeting_id, &template, &res).await.map_err(db_err)?;
+    // Export failures must not lose the generated notes; they are reported in the log and retried on next export
+    match super::export::export_dir(pool).await {
+        Ok(root) => {
+            if let Err(e) = super::export::export_meeting(pool, &meeting_id, &root).await {
+                log::warn!("markdown export failed for {meeting_id}: {e}");
+            }
+        }
+        Err(e) => log::warn!("cannot read export folder setting: {e}"),
+    }
     Ok(GeneratedNotes {
         version_id,
         template,
@@ -191,4 +200,35 @@ pub async fn notes_generate(
         completion_tokens: res.completion_tokens,
         payment_required: false,
     })
+}
+
+#[derive(Serialize)]
+pub struct ExportResult {
+    pub notes_path: String,
+    pub transcript_path: String,
+}
+
+#[tauri::command]
+pub async fn export_meeting_markdown(state: tauri::State<'_, AppState>, meeting_id: String) -> Result<ExportResult, String> {
+    let pool = state.db_manager.pool();
+    let root = super::export::export_dir(pool).await.map_err(db_err)?;
+    let p = super::export::export_meeting(pool, &meeting_id, &root).await?;
+    Ok(ExportResult { notes_path: p.notes.display().to_string(), transcript_path: p.transcript.display().to_string() })
+}
+
+#[tauri::command]
+pub async fn export_get_dir(state: tauri::State<'_, AppState>) -> Result<String, String> {
+    super::export::export_dir(state.db_manager.pool()).await.map(|p| p.display().to_string()).map_err(db_err)
+}
+
+#[tauri::command]
+pub async fn export_set_dir(state: tauri::State<'_, AppState>, dir: String) -> Result<(), String> {
+    let path = std::path::PathBuf::from(dir.trim());
+    if !path.is_absolute() {
+        return Err("Choose an absolute folder path".into());
+    }
+    std::fs::create_dir_all(&path).map_err(|e| format!("cannot use {}: {e}", path.display()))?;
+    super::export::set_setting(state.db_manager.pool(), super::export::EXPORT_DIR_KEY, &path.display().to_string())
+        .await
+        .map_err(db_err)
 }
