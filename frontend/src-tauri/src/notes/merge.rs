@@ -185,7 +185,10 @@ pub fn parse_doc(raw: &str) -> Result<NotesDoc, String> {
     if end <= start {
         return Err("no JSON object found".into());
     }
-    serde_json::from_str(&raw[start..=end]).map_err(|e| e.to_string())
+    // Through Value first: models occasionally repeat a key ("points" twice), which typed parsing
+    // rejects; a Value keeps the last occurrence instead of failing the whole meeting.
+    let value: serde_json::Value = serde_json::from_str(&raw[start..=end]).map_err(|e| e.to_string())?;
+    serde_json::from_value(value).map_err(|e| e.to_string())
 }
 
 /// Makes the model output trustworthy: user notes verbatim and complete, evidence ids real,
@@ -440,6 +443,12 @@ mod tests {
         let p = build_user_prompt(&segs(), &["deck".into()], &prompts::template("general").unwrap(), None);
         assert!(p.contains("[N1] deck"));
         assert!(p.contains("[S2 00:04 Them] Yes, I will send it Friday."));
+    }
+
+    #[test]
+    fn parse_tolerates_duplicate_keys() {
+        let doc = parse_doc(r#"{"title":"t","summary":"s","sections":[{"heading":"h","points":[],"points":[{"text":"kept","evidence":[]}]}]}"#).unwrap();
+        assert_eq!(doc.sections[0].points[0].text, "kept");
     }
 
     #[test]
